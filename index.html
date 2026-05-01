@@ -545,7 +545,28 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .pwk-empty{font-size:11px;color:#ccc;}
 
 
-/* ── MÓVIL ──────────────────────────────────────── */
+/* ── MOBILE LIST OVERLAY ────────────────────────── */
+.mlist-overlay{position:fixed;inset:0;z-index:900;background:var(--light);display:flex;flex-direction:column;overflow:hidden;}
+.mlist-header{background:#2e6b30;color:white;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.mlist-back{background:none;border:none;color:white;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;white-space:nowrap;}
+.mlist-stats{font-size:11px;opacity:.8;margin-top:2px;}
+.mlist-budget{margin-left:auto;font-size:18px;font-weight:700;white-space:nowrap;}
+.mlist-body{flex:1;overflow-y:auto;}
+.mlist-cat{background:#e8e8e8;padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555;}
+.mlist-item{display:flex;align-items:center;gap:12px;background:white;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:opacity .15s;}
+.mlist-item.pantry{background:#fafff8;border-left:3px solid #a8d5a2;}
+.mlist-item.done{opacity:.35;}
+.mlist-item.done .mlist-chk{color:#2e6b30;}
+.mlist-chk{font-size:20px;color:#ddd;width:24px;text-align:center;flex-shrink:0;}
+.mlist-name{flex:1;font-size:15px;}
+.mlist-qty{font-size:13px;color:#aaa;font-weight:600;}
+.mlist-footer{background:white;border-top:1px solid var(--border);padding:12px 16px;flex-shrink:0;}
+.mlist-add-row{display:flex;gap:8px;margin-bottom:10px;}
+.mlist-add-input{flex:1;padding:11px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;}
+.mlist-add-btn{padding:11px 18px;background:#2e6b30;color:white;border:none;border-radius:10px;font-size:18px;cursor:pointer;}
+.mlist-reset{width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:10px;font-size:14px;color:#c0392b;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+
 .btn-gear{background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;line-height:1;}
 .tbr-desktop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 
@@ -562,7 +583,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
   .tbr-desktop{display:none !important;}
   .tabs-bar{padding:0 12px;}
   .logo span{display:none;}
-  .hoy-wrap{padding:16px 16px 20px;gap:16px;min-height:auto;}
+  .hoy-wrap{padding:20px 16px 24px;gap:20px;min-height:auto;justify-content:flex-start;}
 }
 @media (min-width: 681px){
   .btn-gear{display:none !important;}
@@ -735,6 +756,26 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
       <button class="shopd-day-btn" onclick="pickShopDays(14)">14 días</button>
     </div>
     <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="closeShopDialog()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MOBILE LIST OVERLAY -->
+<div class="mlist-overlay" id="mlistOverlay" style="display:none;">
+  <div class="mlist-header">
+    <button class="mlist-back" onclick="closeMobileList()">← Volver</button>
+    <div>
+      <div style="font-size:16px;font-weight:700;">🛒 Lista de la compra</div>
+      <div class="mlist-stats" id="mlistStats"></div>
+    </div>
+    <div class="mlist-budget" id="mlistBudget"></div>
+  </div>
+  <div class="mlist-body" id="mlistBody"></div>
+  <div class="mlist-footer">
+    <div class="mlist-add-row">
+      <input class="mlist-add-input" id="mlistManual" type="text" placeholder="Añadir artículo…"/>
+      <button class="mlist-add-btn" onclick="mlistAddManual()">+</button>
+    </div>
+    <button class="mlist-reset" onclick="mlistReset()">↺ Restablecer todo</button>
   </div>
 </div>
 
@@ -3436,12 +3477,124 @@ function cookStep(dir){_cookStepIdx+=dir;if(_cookStepIdx<0)_cookStepIdx=0;render
 // ── LISTA DE LA COMPRA RÁPIDA ────────────────────────────────
 function openShopDialog(){document.getElementById('shopdOverlay').style.display='flex';}
 function closeShopDialog(){document.getElementById('shopdOverlay').style.display='none';}
+let _mlistChecked={};
+let _mlistItems=[];
+let _mlistTotalBudget=0;
+
 function pickShopDays(days){
   closeShopDialog();
-  // Actualizar el control de días en la pestaña lista y navegar
-  const ctrl=document.getElementById('listDays');
-  if(ctrl)ctrl.value=days;
-  switchTab('list');
+  openMobileList(days);
+}
+
+function openMobileList(days){
+  const shopDate=getNextShopDate();
+  const endDate=new Date(shopDate);endDate.setDate(shopDate.getDate()+days);
+  const inPeriod=recipes.filter(r=>{const d=getDayDate(r.wo,r.day);return d>=shopDate&&d<endDate;});
+
+  // Build item map (same logic as renderList)
+  const ingMap={};
+  function addIng(name,qty,label){
+    if(!name||name.toLowerCase().includes('vorrat'))return;
+    const k=resolveAlias(name);
+    const displayName=prices[k]?.name||name;
+    const inPantryItem=isInPantry(name);
+    const cat=inPantryItem?'🏠 Despensa':getCatForIng(displayName);
+    if(!ingMap[k]){ingMap[k]={name:displayName,qtys:[],cat,isPantry:inPantryItem,recipes:[]};}
+    ingMap[k].qtys.push(qty||null);
+    ingMap[k].recipes.push(label);
+  }
+  inPeriod.forEach(r=>r.ings.forEach(i=>addIng(iN(i),iQ(i),r.name)));
+  getLunchesInPeriod(shopDate,endDate).forEach(l=>{
+    (l.ings||[]).forEach(i=>addIng(i.name,i.qty,'🥡 Tupper'));
+    (l.thomas_extra||[]).forEach(i=>addIng(i.name,i.qty,'🔵 Thomas'));
+  });
+
+  // Budget
+  const budgetBase=calcBudget(inPeriod);
+  const lunchEst=calcLunchBudget(getLunchesInPeriod(shopDate,endDate));
+  _mlistTotalBudget=budgetBase.total+lunchEst.total;
+  _mlistChecked={};
+  _mlistItems=Object.values(ingMap);
+
+  renderMobileList();
+  document.getElementById('mlistOverlay').style.display='flex';
+}
+
+function closeMobileList(){
+  document.getElementById('mlistOverlay').style.display='none';
+}
+
+function renderMobileList(){
+  const cats={};
+  const pantryItems=[];
+  _mlistItems.forEach((item,idx)=>{
+    if(item.isPantry){pantryItems.push({...item,idx});return;}
+    if(!cats[item.cat])cats[item.cat]=[];
+    cats[item.cat].push({...item,idx});
+  });
+
+  // Budget remaining
+  let spent=0;
+  _mlistItems.forEach((item,idx)=>{
+    if(_mlistChecked[idx]){
+      const est=estimateIngCost({name:item.name,qty:sumQty(item.qtys)||null})||0;
+      spent+=est;
+    }
+  });
+  const remaining=Math.max(0,_mlistTotalBudget-Math.round(spent));
+  const total=_mlistItems.filter(i=>!i.isPantry).length;
+  const done=_mlistItems.filter((i,idx)=>!i.isPantry&&_mlistChecked[idx]).length;
+
+  document.getElementById('mlistBudget').textContent=`~${remaining} €`;
+  document.getElementById('mlistStats').textContent=`${total-done} por comprar · ${done} hechos`;
+
+  const CAT_EMOJI={'Verduras y Fruta':'🥦','Proteínas':'🥩','Lácteos y Huevos':'🧀','Pasta, Arroz y Legumbres':'🍝','Panadería':'🍞','Conservas y Salsas':'🥫','Especias & Aceites':'🫒','Varios':'📦'};
+  let html='';
+  Object.entries(cats).forEach(([cat,items])=>{
+    const emoji=CAT_EMOJI[cat]||'📦';
+    html+=`<div class="mlist-cat">${emoji} ${cat}</div>`;
+    items.forEach(item=>{
+      const qty=sumQty(item.qtys);
+      const ck=_mlistChecked[item.idx];
+      html+=`<div class="mlist-item${ck?' done':''}" onclick="mlistToggle(${item.idx})">
+        <span class="mlist-chk">${ck?'✓':'○'}</span>
+        <span class="mlist-name">${item.name}</span>
+        ${qty?`<span class="mlist-qty">${qty}</span>`:''}
+      </div>`;
+    });
+  });
+  if(pantryItems.length){
+    html+=`<div class="mlist-cat">🏠 Despensa (verificar)</div>`;
+    pantryItems.forEach(item=>{
+      const qty=sumQty(item.qtys);
+      const ck=_mlistChecked[item.idx];
+      html+=`<div class="mlist-item pantry${ck?' done':''}" onclick="mlistToggle(${item.idx})">
+        <span class="mlist-chk">${ck?'✓':'○'}</span>
+        <span class="mlist-name">${item.name}</span>
+        ${qty?`<span class="mlist-qty">${qty}</span>`:''}
+      </div>`;
+    });
+  }
+  document.getElementById('mlistBody').innerHTML=html;
+}
+
+function mlistToggle(idx){
+  _mlistChecked[idx]=!_mlistChecked[idx];
+  renderMobileList();
+}
+
+function mlistAddManual(){
+  const input=document.getElementById('mlistManual');
+  const val=input.value.trim();if(!val)return;
+  _mlistItems.push({name:val,qtys:[],cat:'Varios',isPantry:false,recipes:[]});
+  input.value='';
+  renderMobileList();
+}
+
+function mlistReset(){
+  if(!confirm('¿Restablecer toda la lista?'))return;
+  _mlistChecked={};
+  renderMobileList();
 }
 
 // ── ANÁLISIS ──────────────────────────────────────────────
