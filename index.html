@@ -544,6 +544,29 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .pwk-recipe{font-size:11px;font-weight:600;border-radius:5px;padding:4px 6px;line-height:1.3;}
 .pwk-empty{font-size:11px;color:#ccc;}
 
+
+/* ── MÓVIL ──────────────────────────────────────── */
+.btn-gear{background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;line-height:1;}
+.tbr-desktop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* Gear panel */
+.gear-overlay{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.3);}
+.gear-panel{position:fixed;top:0;right:0;bottom:0;width:280px;z-index:701;background:var(--white);box-shadow:-4px 0 24px rgba(0,0,0,.12);display:flex;flex-direction:column;overflow-y:auto;}
+.gear-header{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 12px;border-bottom:1px solid var(--border);}
+.gear-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:14px 16px 4px;}
+.gear-item{display:block;width:100%;text-align:left;padding:12px 16px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--border-light);}
+.gear-item:hover{background:var(--hover);}
+
+@media (max-width: 680px){
+  .tab-desktop{display:none !important;}
+  .tbr-desktop{display:none !important;}
+  .tabs-bar{padding:0 12px;}
+  .logo span{display:none;}
+  .hoy-wrap{padding:16px 16px 20px;gap:16px;min-height:auto;}
+}
+@media (min-width: 681px){
+  .btn-gear{display:none !important;}
+}
 </style>
 </head>
 <body>
@@ -625,18 +648,41 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
     <div class="tabs">
       <button class="tab active" onclick="switchTab('hoy')">Hoy</button>
       <button class="tab" onclick="switchTab('plan')">Calendario</button>
-      <button class="tab" onclick="switchTab('list')">Lista de la compra</button>
-      <button class="tab" onclick="switchTab('preise')">Precios</button>
-      <button class="tab" onclick="switchTab('analisis')">Análisis</button>
+      <button class="tab tab-desktop" onclick="switchTab('list')">Lista de la compra</button>
+      <button class="tab tab-desktop" onclick="switchTab('preise')">Precios</button>
+      <button class="tab tab-desktop" onclick="switchTab('analisis')">Análisis</button>
     </div>
   </div>
   <div class="tbr">
-    <button class="btn" onclick="openAvoidModal()">⚙ Preferencias</button>
-    <button class="btn" onclick="exportData()">&#8595; Exportar</button>
-    <label class="btn" style="cursor:pointer;">&#8593; Importar datos<input type="file" accept=".json" style="display:none;" onchange="importData(event)"/></label>
-    <button class="btn btn-bl" onclick="toggleImport()">&#8593; Importar recetas</button>
-    <button class="btn btn-dk" onclick="openModal(null,null)">+ Receta</button>
+    <div class="tbr-desktop">
+      <button class="btn" onclick="openAvoidModal()">⚙ Preferencias</button>
+      <button class="btn" onclick="exportData()">&#8595; Exportar</button>
+      <label class="btn" style="cursor:pointer;">&#8593; Importar datos<input type="file" accept=".json" style="display:none;" onchange="importData(event)"/></label>
+      <button class="btn btn-bl" onclick="toggleImport()">&#8593; Importar recetas</button>
+      <button class="btn btn-dk" onclick="openModal(null,null)">+ Receta</button>
+    </div>
+    <button class="btn-gear" onclick="openGearPanel()" title="Más opciones">⚙️</button>
   </div>
+</div>
+
+<!-- GEAR PANEL -->
+<div class="gear-overlay" id="gearOverlay" style="display:none;" onclick="closeGearPanel()"></div>
+<div class="gear-panel" id="gearPanel" style="display:none;">
+  <div class="gear-header">
+    <div style="font-family:'Lora',serif;font-size:16px;font-weight:600;">NataFresh</div>
+    <button onclick="closeGearPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+  </div>
+  <div class="gear-section">Navegar</div>
+  <button class="gear-item" onclick="switchTab('list');closeGearPanel()">🛒 Lista de la compra</button>
+  <button class="gear-item" onclick="switchTab('preise');closeGearPanel()">💶 Precios</button>
+  <button class="gear-item" onclick="switchTab('analisis');closeGearPanel()">📊 Análisis</button>
+  <div class="gear-section">Gestión</div>
+  <button class="gear-item" onclick="openAvoidModal();closeGearPanel()">⚙️ Preferencias</button>
+  <button class="gear-item" onclick="openModal(null,null);closeGearPanel()">➕ Nueva receta</button>
+  <button class="gear-item" onclick="toggleImport();closeGearPanel()">⬆️ Importar recetas</button>
+  <div class="gear-section">Datos</div>
+  <button class="gear-item" onclick="exportData();closeGearPanel()">⬇️ Exportar datos</button>
+  <label class="gear-item" style="cursor:pointer;">⬆️ Importar datos<input type="file" accept=".json" style="display:none;" onchange="importData(event);closeGearPanel()"/></label>
 </div>
 
 <div class="leg-bar" id="legBar">
@@ -3833,6 +3879,9 @@ function renderWeight(){
       </div>
     </div>`;
 }
+
+function openGearPanel(){document.getElementById('gearPanel').style.display='flex';document.getElementById('gearOverlay').style.display='block';}
+function closeGearPanel(){document.getElementById('gearPanel').style.display='none';document.getElementById('gearOverlay').style.display='none';}
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
