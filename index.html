@@ -3533,7 +3533,7 @@ function openMobileList(days){
     const displayName=prices[k]?.name||name;
     const inPantryItem=isInPantry(name);
     const cat=inPantryItem?'🏠 Despensa':getCatForIng(displayName);
-    if(!ingMap[k]){ingMap[k]={name:displayName,qtys:[],cat,isPantry:inPantryItem,recipes:[]};}
+    if(!ingMap[k]){ingMap[k]={name:displayName,qtys:[],cat,isPantry:inPantryItem,recipes:[],futureByWo:{}};}
     ingMap[k].qtys.push(qty||null);
     ingMap[k].recipes.push(label);
   }
@@ -3542,6 +3542,16 @@ function openMobileList(days){
     (l.ings||[]).forEach(i=>addIng(i.name,i.qty,'🥡 Tupper'));
     (l.thomas_extra||[]).forEach(i=>addIng(i.name,i.qty,'🔵 Thomas'));
   });
+  // Cantidades acumuladas con semanas futuras (hasta 2 semanas más)
+  const horizonDateM=new Date(shopDate);horizonDateM.setDate(shopDate.getDate()+days+7*2);
+  const afterPeriodM=recipes.filter(r=>{const d=getDayDate(r.wo,r.day);return d>=endDate&&d<horizonDateM;});
+  afterPeriodM.forEach(r=>r.ings.forEach(ing=>{
+    const n=iN(ing);const q=iQ(ing);
+    const k=resolveAlias(n);
+    if(!ingMap[k])return;
+    if(!ingMap[k].futureByWo[r.wo])ingMap[k].futureByWo[r.wo]=[];
+    ingMap[k].futureByWo[r.wo].push(q);
+  }));
 
   // Budget
   const budgetBase=calcBudget(inPeriod);
@@ -3593,11 +3603,18 @@ function renderMobileList(){
     html+=`<div class="mlist-cat">${emoji} ${cat}</div>`;
     sorted.forEach(item=>{
       const qty=sumQty(item.qtys);
+      let qtyDisplay=qty||'';
+      if(qty&&item.futureByWo&&Object.keys(item.futureByWo).length){
+        const futureWos=Object.keys(item.futureByWo).map(Number).sort();
+        let running=[...item.qtys];
+        const cumuls=futureWos.map(fw=>{running=[...running,...item.futureByWo[fw]];return sumQty(running);}).filter(Boolean);
+        if(cumuls.length)qtyDisplay=`${qty} <span style="font-size:10px;color:#5a9ec4;">(${cumuls.join('/')} c/sig.)</span>`;
+      }
       const ck=_mlistChecked[item.idx];
       html+=`<div class="mlist-item${ck?' done':''}" onclick="mlistToggle(${item.idx})">
         <span class="mlist-chk">${ck?'✓':'○'}</span>
         <span class="mlist-name">${item.name}</span>
-        ${qty?`<span class="mlist-qty">${qty}</span>`:''}
+        ${qtyDisplay?`<span class="mlist-qty">${qtyDisplay}</span>`:''}
       </div>`;
     });
   });
