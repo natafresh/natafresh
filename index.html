@@ -68,6 +68,12 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 /* GRID */
 .pgrid-card{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
 .pgrid{display:grid;grid-template-columns:64px repeat(7,minmax(0,1fr));}
+.pgrid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+@media(max-width:680px){
+  .pgrid-scroll{overflow-x:scroll;}
+  .pgrid{grid-template-columns:50px repeat(7,minmax(120px,1fr));}
+  .dcell{min-height:70px;}
+}
 .gh{background:var(--light);border-bottom:1px solid var(--border-light);font-size:11px;font-weight:600;color:var(--muted);text-align:center;padding:8px 4px;text-transform:uppercase;letter-spacing:.04em;}
 .gh.corner{border-right:1px solid var(--border-light);}
 .wlbl{padding:8px 6px;border-right:1px solid var(--border-light);border-bottom:1px solid var(--border-light);display:flex;flex-direction:column;gap:2px;}
@@ -772,8 +778,8 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
   <div class="mlist-body" id="mlistBody"></div>
   <div class="mlist-footer">
     <div class="mlist-add-row">
-      <input class="mlist-add-input" id="mlistManual" type="text" placeholder="Añadir artículo…"/>
-      <button class="mlist-add-btn" onclick="mlistAddManual()">+</button>
+      <input class="mlist-add-input" id="mlistManual" type="text" placeholder="Añadir artículo…" autocomplete="on" autocorrect="on" autocapitalize="sentences" onkeydown="if(event.key==='Enter')mlistAddManual()"/>
+      <button class="mlist-add-btn" type="button" onclick="mlistAddManual()">+</button>
     </div>
     <button class="mlist-reset" onclick="mlistReset()">↺ Restablecer todo</button>
   </div>
@@ -802,7 +808,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
       <button class="btn" onclick="printAllWeeks()" title="Imprimir las 4 semanas">&#128438; Todo</button>
     </div>
   </div>
-  <div class="pgrid-card"><div class="pgrid" id="pgrid"></div></div>
+  <div class="pgrid-scroll"><div class="pgrid-card"><div class="pgrid" id="pgrid"></div></div></div>
   <div class="shared">
     <div class="shared-hdr">
       <div>
@@ -3552,8 +3558,12 @@ function renderMobileList(){
   let html='';
   Object.entries(cats).forEach(([cat,items])=>{
     const emoji=CAT_EMOJI[cat]||'📦';
+    // Pendientes primero, marcados al final
+    const pending=items.filter(item=>!_mlistChecked[item.idx]);
+    const done=items.filter(item=>_mlistChecked[item.idx]);
+    const sorted=[...pending,...done];
     html+=`<div class="mlist-cat">${emoji} ${cat}</div>`;
-    items.forEach(item=>{
+    sorted.forEach(item=>{
       const qty=sumQty(item.qtys);
       const ck=_mlistChecked[item.idx];
       html+=`<div class="mlist-item${ck?' done':''}" onclick="mlistToggle(${item.idx})">
@@ -3565,7 +3575,9 @@ function renderMobileList(){
   });
   if(pantryItems.length){
     html+=`<div class="mlist-cat">🏠 Despensa (verificar)</div>`;
-    pantryItems.forEach(item=>{
+    const pendingP=pantryItems.filter(item=>!_mlistChecked[item.idx]);
+    const doneP=pantryItems.filter(item=>_mlistChecked[item.idx]);
+    [...pendingP,...doneP].forEach(item=>{
       const qty=sumQty(item.qtys);
       const ck=_mlistChecked[item.idx];
       html+=`<div class="mlist-item pantry${ck?' done':''}" onclick="mlistToggle(${item.idx})">
