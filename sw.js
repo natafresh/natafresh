@@ -1,4 +1,4 @@
-const CACHE = 'natafresh-v1';
+const CACHE = 'natafresh-v3';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
