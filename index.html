@@ -3573,10 +3573,11 @@ function handleShopBtn(){
 let mlExtra=[]; // {name, qty}
 let _mlSyncInterval=null;
 let _mlLastCheckedStr='';
+let _mlDays=7; // days selected from shop dialog
 
 function renderMobileListPane(){
   const shopDate=getNextShopDate();
-  const days=7; // default 7 days for mobile list
+  const days=_mlDays||7;
   const endDate=new Date(shopDate);endDate.setDate(shopDate.getDate()+days);
   const inPeriod=recipes.filter(r=>{const d=getDayDate(r.wo,r.day);return d>=shopDate&&d<endDate;});
 
@@ -3764,7 +3765,8 @@ let _mlistTotalBudget=0;
 
 function pickShopDays(days){
   closeShopDialog();
-  openMobileList(days);
+  _mlDays=days;
+  switchTab('mlist');
 }
 
 function openMobileList(days){
