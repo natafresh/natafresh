@@ -4873,9 +4873,9 @@ function pdfRenderDayPicker(){
   const WEEKS=4; // weeks shown at once
   let html=`
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-    <button onclick="pdfPickerNav(-${WEEKS})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);">‹</button>
+    <button onclick="pdfPickerNav(-1)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);">‹</button>
     <span id="dpickRange" style="font-size:11px;color:var(--muted);font-weight:600;"></span>
-    <button onclick="pdfPickerNav(${WEEKS})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);">›</button>
+    <button onclick="pdfPickerNav(1)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);">›</button>
   </div>
   <div class="dpick-headers"><div></div>${DAYS.map(d=>`<div class="dpick-dname">${d}</div>`).join('')}</div>`;
   for(let wi=0;wi<WEEKS;wi++){
@@ -4910,7 +4910,7 @@ function pdfRenderDayPicker(){
 }
 
 function pdfPickerNav(delta){
-  pdfPickerStart=Math.max(-8,pdfPickerStart+delta); // don't go before 8 weeks ago
+  pdfPickerStart=Math.max(-8,pdfPickerStart+delta);
   pdfRenderDayPicker();
 }
 
