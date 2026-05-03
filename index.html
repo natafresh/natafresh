@@ -292,7 +292,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .rmodal-step{display:flex;gap:8px;margin-bottom:10px;font-size:12px;line-height:1.45;}
 .rmodal-step:last-child{margin-bottom:0;}
 .rmodal-step-n{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--white);flex-shrink:0;margin-top:1px;}
-.rmodal-step-t{font-weight:600;font-size:11px;display:block;margin-bottom:2px;}
+.step-qty{font-weight:700;color:inherit;opacity:.75;font-size:.9em;white-space:nowrap;} .rmodal-step-t{font-weight:600;font-size:11px;display:block;margin-bottom:2px;}
 @media(max-width:480px){.rmodal-body{grid-template-columns:1fr;}.rmodal-ings{border-right:none;border-bottom:1px solid var(--border-light);}}
 
 /* ADD RECIPE MODAL */
@@ -1986,6 +1986,38 @@ function saveRecipe(){
 }
 
 // RECIPE MODAL
+
+// ── ANNOTATE STEPS WITH QUANTITIES ──────────────────────────
+// For each ingredient with a qty, find mentions in step text and prepend qty
+function annotateStep(text, ings){
+  if(!text||!ings||!ings.length) return text;
+  // Sort by name length descending so longer names match first (e.g. "saure Sahne, Bio" before "Sahne")
+  const sorted=[...ings].filter(i=>i.name&&i.qty).sort((a,b)=>b.name.length-a.name.length);
+  let result=text;
+  for(const ing of sorted){
+    const name=ing.name.trim();
+    const qty=ing.qty.trim();
+    if(!name||!qty||qty==='—'||qty==='null') continue;
+    // Build a regex that matches the ingredient name as a whole word (case-insensitive)
+    // Use word boundary or space/punctuation around it
+    try{
+      const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const re=new RegExp('(?<![\\w])('+escaped+')(?![\\w])','gi');
+      if(re.test(result)){
+        // Reset lastIndex
+        const re2=new RegExp('(?<![\\w])('+escaped+')(?![\\w])','gi');
+        // Only annotate first occurrence to avoid clutter
+        let done=false;
+        result=result.replace(re2,(match)=>{
+          if(done) return match;
+          done=true;
+          return `<span class="step-qty">${qty}</span> ${match}`;
+        });
+      }
+    }catch(e){}
+  }
+  return result;
+}
 function openRecipeModal(recipeId){
   const r=recipes.find(x=>x.id===recipeId);if(!r)return;
   const col=C[r.type]||C.huhn;
@@ -2031,7 +2063,7 @@ function openRecipeModal(recipeId){
   stepsEl.innerHTML=`<div class="rmodal-section-t" style="color:${col.dark};border-color:${col.mid}">Preparación</div>`;
   if(data&&data.steps&&data.steps.length){
     data.steps.forEach((step,i)=>{
-      stepsEl.innerHTML+=`<div class="rmodal-step"><div class="rmodal-step-n" style="background:${col.dark}">${i+1}</div><div><span class="rmodal-step-t" style="color:${col.dark}">${step.title||''}</span>${step.text}</div></div>`;
+      stepsEl.innerHTML+=`<div class="rmodal-step"><div class="rmodal-step-n" style="background:${col.dark}">${i+1}</div><div><span class="rmodal-step-t" style="color:${col.dark}">${step.title||''}</span>${annotateStep(step.text,r.ings)}</div></div>`;
     });
   } else {
     stepsEl.innerHTML+=`<div style="font-size:12px;color:var(--muted);font-style:italic;">Pasos disponibles tras importar — vuelve a importar rezepte_kompakt.html.</div>`;
@@ -4936,6 +4968,7 @@ function pdfAddToPlanner(){
   document.getElementById('pdfIcon').textContent='📥';
   document.getElementById('pdfLabel').textContent='PDF HelloFresh aquí o clic para seleccionar';
   document.getElementById('pdfFileIn').value='';
+  document.getElementById('pdfTextInput').value='';
   pdfSetStatus('','');
 
   // Switch to calendar
