@@ -1045,6 +1045,126 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
   <div id="anContent"></div>
   <div id="anWeight"></div>
 </div>
+
+<!-- PANE: PDF IMPORT -->
+<div class="pane" id="pane-pdf" style="padding:20px;max-width:680px;margin:0 auto;">
+
+<style>
+.pdf-drop{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;background:var(--light);transition:all .2s;}
+.pdf-drop:hover,.pdf-drop.drag{border-color:var(--veggi-dark);background:var(--green-bg);}
+.pdf-drop.loaded{border-color:var(--veggi-dark);background:var(--green-bg);}
+.pdf-section{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border-light);}
+.pdf-field label{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.pdf-field input,.pdf-field select,.pdf-field textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);}
+.pdf-field textarea{min-height:60px;resize:vertical;}
+.pdf-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pdf-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.pdf-field{margin-bottom:12px;}
+.prot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;}
+.prot-btn{padding:8px 6px;border-radius:8px;border:2px solid transparent;font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
+.prot-btn.active{border-color:var(--btn-dark)!important;}
+.prot-btn[data-p="huhn"]   {background:var(--huhn-bg);color:var(--huhn-dark);--btn-dark:var(--huhn-dark)}
+.prot-btn[data-p="schwein"]{background:var(--schwein-bg);color:var(--schwein-dark);--btn-dark:var(--schwein-dark)}
+.prot-btn[data-p="fisch"]  {background:var(--fisch-bg);color:var(--fisch-dark);--btn-dark:var(--fisch-dark)}
+.prot-btn[data-p="veggi"]  {background:var(--veggi-bg);color:var(--veggi-dark);--btn-dark:var(--veggi-dark)}
+.prot-btn[data-p="rind"]   {background:var(--rind-bg);color:var(--rind-dark);--btn-dark:var(--rind-dark)}
+.prot-btn[data-p="wurst"]  {background:var(--wurst-bg);color:var(--wurst-dark);--btn-dark:var(--wurst-dark)}
+.ing-row{display:grid;grid-template-columns:1fr 90px 28px;gap:6px;align-items:center;margin-bottom:5px;}
+.ing-row input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;}
+.step-row{display:grid;grid-template-columns:24px 1fr 90px 28px;gap:6px;align-items:start;margin-bottom:6px;}
+.step-badge{width:22px;height:22px;border-radius:50%;background:var(--ink);color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:5px;}
+.step-row textarea{min-height:52px;font-size:12px;}
+.step-row input{font-size:12px;}
+.pdf-add-btn{width:100%;padding:7px;border:1px dashed var(--border);border-radius:7px;background:none;font-size:12px;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;margin-top:4px;}
+.pdf-add-btn:hover{border-color:var(--ink);color:var(--ink);}
+.pdf-del-btn{background:none;border:none;font-size:16px;cursor:pointer;color:var(--faint);padding:4px;}
+.pdf-del-btn:hover{color:#c00;}
+.pdf-status{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none;}
+.pdf-status.warn{background:#fff8e1;color:#7a5c00;border:1px solid #ffe082;display:block;}
+.pdf-status.err{background:#fff0f0;color:#c00;border:1px solid #fcc;display:block;}
+.pdf-status.ok{background:var(--green-bg);color:var(--veggi-dark);border:1px solid #a8d5aa;display:block;}
+.dpick-week{display:grid;grid-template-columns:auto repeat(7,1fr);gap:3px;margin-bottom:3px;align-items:center;}
+.dpick-wlabel{font-size:9px;color:var(--faint);font-weight:600;padding-right:4px;white-space:nowrap;}
+.dpick-day{border-radius:6px;padding:5px 2px;text-align:center;font-size:10px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;line-height:1.3;}
+.dpick-day .dpick-dn{font-weight:600;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em;}
+.dpick-day .dpick-dd{font-size:13px;font-weight:700;color:var(--ink);}
+.dpick-day .dpick-rec{font-size:8.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.dpick-day.free{background:white;border-color:var(--border);}
+.dpick-day.free:hover{border-color:var(--veggi-dark);background:var(--green-bg);}
+.dpick-day.selected{border-color:var(--veggi-dark)!important;background:var(--green-bg)!important;}
+.dpick-day.selected .dpick-dd{color:var(--veggi-dark);}
+.dpick-day.taken{background:var(--light);border-color:transparent;cursor:default;opacity:.6;}
+.dpick-day.taken .dpick-dd{color:var(--muted);}
+.dpick-headers{display:grid;grid-template-columns:auto repeat(7,1fr);gap:3px;margin-bottom:4px;}
+.dpick-dname{font-size:9px;font-weight:600;color:var(--faint);text-align:center;text-transform:uppercase;letter-spacing:.04em;}
+</style>
+
+<div class="pdf-drop" id="pdfDrop" onclick="document.getElementById('pdfFileIn').click()">
+  <div id="pdfIcon" style="font-size:32px;margin-bottom:8px;">📥</div>
+  <div id="pdfLabel" style="font-size:13px;font-weight:600;color:var(--muted);">PDF HelloFresh aquí o clic para seleccionar</div>
+  <div id="pdfSub" style="font-size:11px;color:var(--faint);margin-top:4px;">El PDF completo (varias páginas)</div>
+  <input type="file" id="pdfFileIn" accept="application/pdf" style="display:none">
+</div>
+
+<div id="pdfForm" style="display:none;margin-top:4px;">
+  <div id="pdfStatus" class="pdf-status"></div>
+
+  <div class="pdf-section">Color / Proteína</div>
+  <div class="prot-grid" id="pdfProtGrid">
+    <button class="prot-btn active" data-p="huhn"    onclick="pdfSetProt('huhn')">🟡 Geflügel</button>
+    <button class="prot-btn"        data-p="schwein" onclick="pdfSetProt('schwein')">🟣 Schwein</button>
+    <button class="prot-btn"        data-p="fisch"   onclick="pdfSetProt('fisch')">🔵 Fisch</button>
+    <button class="prot-btn"        data-p="veggi"   onclick="pdfSetProt('veggi')">🟢 Vegetarisch</button>
+    <button class="prot-btn"        data-p="rind"    onclick="pdfSetProt('rind')">🟤 Rind</button>
+    <button class="prot-btn"        data-p="wurst"   onclick="pdfSetProt('wurst')">🟠 Wurst</button>
+  </div>
+
+  <div class="pdf-section">Cabecera</div>
+  <div class="pdf-field"><label>Rezeptname</label><input type="text" id="pdfName"></div>
+  <div class="pdf-field"><label>Untertitel</label><input type="text" id="pdfSub2"></div>
+  <div class="pdf-row3">
+    <div class="pdf-field"><label>Zeit (Min)</label><input type="text" id="pdfTime"></div>
+    <div class="pdf-field"><label>Kcal</label><input type="text" id="pdfKcal"></div>
+    <div class="pdf-field"><label>Schwierigkeit</label>
+      <select id="pdfDiff"><option>Einfach</option><option>Mittel</option><option>Anspruchsvoll</option></select>
+    </div>
+  </div>
+
+  <div class="pdf-section">Nährwerte (pro Portion)</div>
+  <div class="pdf-row2">
+    <div class="pdf-field"><label>Eiweiß (g)</label><input type="text" id="pdfProt"></div>
+    <div class="pdf-field"><label>Kohlenhydrate (g)</label><input type="text" id="pdfHc"></div>
+  </div>
+  <div class="pdf-row2">
+    <div class="pdf-field"><label>Fett (g)</label><input type="text" id="pdfFett"></div>
+    <div class="pdf-field"><label>Ballaststoffe (g)</label><input type="text" id="pdfFibra"></div>
+  </div>
+
+  <div class="pdf-section">Zutaten</div>
+  <div id="pdfIngList"></div>
+  <button class="pdf-add-btn" onclick="pdfAddIng()">+ Zutat hinzufügen</button>
+  <div class="pdf-field" style="margin-top:10px;"><label>Aus dem Vorrat</label><input type="text" id="pdfVorrat"></div>
+
+  <div class="pdf-section">Zubereitung</div>
+  <div id="pdfStepList"></div>
+  <button class="pdf-add-btn" onclick="pdfAddStep()">+ Schritt hinzufügen</button>
+  <div class="pdf-field" style="margin-top:10px;"><label>Tipp</label><input type="text" id="pdfTip"></div>
+
+  <div class="pdf-section">Allergene</div>
+  <div class="pdf-field"><input type="text" id="pdfAllergen" placeholder="Weizen · Milch · Eier"></div>
+
+  <div class="pdf-section">Fecha en el calendario</div>
+  <div id="pdfDayPicker" style="margin-bottom:4px;"></div>
+  <input type="hidden" id="pdfDate">
+
+  <div style="margin-top:20px;display:flex;gap:10px;">
+    <button class="btn btn-dk" onclick="pdfAddToPlanner()" style="flex:2;padding:12px;">📅 Añadir al planificador</button>
+    <button class="btn" onclick="pdfDownloadHtml()" style="flex:1;padding:12px;">⬇ HTML</button>
+  </div>
+</div>
+</div>
+<!-- END PANE PDF -->
+
 <!-- SOBRAS MODAL -->
 <div class="sobras-modal" id="sobrasModal">
   <div class="sobras-box">
@@ -3065,9 +3185,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .cat-hdr{background:#f0f0f0;padding:10px 16px;font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e0e0e0;}
 .item{display:flex;align-items:center;gap:12px;background:white;padding:15px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:opacity .2s;}
 .item.checked{opacity:.35;text-decoration:line-through;}
-.hide-done .item.checked{display:none!important;}
-.toggle-done-btn{margin-top:8px;padding:7px 14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);border-radius:20px;color:white;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.02em;}
-.toggle-done-btn:active{background:rgba(255,255,255,.28);}
 .item.pantry-item{background:#fafff8;border-left:3px solid #a8d5a2;}
 .chk-icon{font-size:22px;color:#ddd;width:28px;text-align:center;flex-shrink:0;}
 .item.checked .chk-icon{color:#2e6b30;}
@@ -3088,7 +3205,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
   <div style="font-size:20px;font-weight:700;">🛒 Lista de la compra</div>
   <div style="font-size:13px;margin-top:4px;opacity:.9;" id="hdrStats">${totalItems} artículos · <span id="budgetDisplay">~${staticBudget} €</span> · ${pantryUnchecked.length} despensa</div>
   <div style="font-size:11px;margin-top:2px;opacity:.65;">NataFresh · ${dateStr}</div>
-  <button class="toggle-done-btn" id="hideDoneBtn" onclick="toggleHideDone()">🙈 Ocultar comprados</button>
 </div>
 <div id="listBody">
 ${itemsHtml}
@@ -3115,21 +3231,9 @@ function recalcBudget(){
   document.getElementById('budgetDisplay').textContent='~'+Math.max(0,remaining)+' €';
 }
 
-let hidingDone=false;
-
-function toggleHideDone(){
-  hidingDone=!hidingDone;
-  document.getElementById('listBody').classList.toggle('hide-done',hidingDone);
-  document.getElementById('hideDoneBtn').textContent=hidingDone?'👁 Mostrar comprados':'🙈 Ocultar comprados';
-}
-
 function toggleItem(id,el){
   if(checkedSet.has(id)){checkedSet.delete(id);el.classList.remove('checked');el.querySelector('.chk-icon').textContent='☐';}
-  else{
-    checkedSet.add(id);el.classList.add('checked');el.querySelector('.chk-icon').textContent='✓';
-    // Si hide-done activo, pequeño delay para que se vea el check antes de desaparecer
-    if(hidingDone){el.style.transition='opacity .4s';setTimeout(()=>{/* la clase hide-done ya lo oculta */},420);}
-  }
+  else{checkedSet.add(id);el.classList.add('checked');el.querySelector('.chk-icon').textContent='✓';}
   recalcBudget();
 }
 
@@ -3405,6 +3509,7 @@ function debugBudget(){
 }
 
 function switchTab(tab){
+  if(tab==='pdf')setTimeout(pdfRenderDayPicker,50);
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   // Handle both mobile (mlist) and desktop (list) tab buttons for list
@@ -4400,5 +4505,399 @@ async function init(){
 init();
 
 </script>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════
+//  PDF IMPORT TAB
+// ════════════════════════════════════════════════════
+if(typeof pdfjsLib !== 'undefined')
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfProtein='huhn';
+
+// Drop zone
+document.addEventListener('DOMContentLoaded',()=>{
+  const drop=document.getElementById('pdfDrop');
+  const fi=document.getElementById('pdfFileIn');
+  if(!drop||!fi)return;
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');});
+  drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
+  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')pdfProcess(f);});
+  fi.addEventListener('change',e=>{if(e.target.files[0])pdfProcess(e.target.files[0]);});
+  // Set today as default date
+  const today=new Date();today.setDate(today.getDate()+1);
+  document.getElementById('pdfDate').value=today.toISOString().split('T')[0];
+});
+
+async function pdfProcess(file){
+  pdfSetStatus('','');
+  document.getElementById('pdfIcon').textContent='⏳';
+  document.getElementById('pdfLabel').textContent='Leyendo PDF…';
+  try{
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    let allItems=[];
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const content=await page.getTextContent();
+      const vp=page.getViewport({scale:1});
+      content.items.forEach(it=>{allItems.push({text:it.str.trim(),x:it.transform[4],y:vp.height-it.transform[5],h:it.height,page:p});});
+    }
+    const parsed=pdfParse(allItems);
+    pdfPopulate(parsed);
+    document.getElementById('pdfDrop').classList.add('loaded');
+    document.getElementById('pdfIcon').textContent='📄';
+    document.getElementById('pdfLabel').textContent=file.name;
+    document.getElementById('pdfForm').style.display='block';
+    document.getElementById('pdfForm').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    document.getElementById('pdfIcon').textContent='❌';
+    document.getElementById('pdfLabel').textContent='Error al leer el PDF';
+    pdfSetStatus('err','Error: '+e.message);
+  }
+}
+
+// ── PARSER ──────────────────────────────────────────
+function pdfGroupLines(items){
+  const sorted=[...items].sort((a,b)=>a.page!==b.page?a.page-b.page:a.y-b.y||a.x-b.x);
+  const lines=[];
+  let cur={text:sorted[0].text,y:sorted[0].y,page:sorted[0].page};
+  for(let i=1;i<sorted.length;i++){
+    const it=sorted[i];
+    if(it.page===cur.page&&Math.abs(it.y-cur.y)<5)cur.text+=(it.x>10?' ':'')+it.text;
+    else{if(cur.text.trim())lines.push({text:cur.text.trim(),y:cur.y,page:cur.page});cur={text:it.text,y:it.y,page:it.page};}
+  }
+  if(cur.text.trim())lines.push({text:cur.text.trim(),y:cur.y,page:cur.page});
+  return lines;
+}
+
+function pdfDetectProtein(text){
+  if(/hähnchen|huhn|hähncheninnen|geflügel|pute/i.test(text))return'huhn';
+  if(/lachs|fisch|garnelen|thunfisch|seelachs|kabeljau/i.test(text))return'fisch';
+  if(/rind|steak|hackfleisch|hüftsteak/i.test(text))return'rind';
+  if(/würstchen|wurst|bacon|speck|chorizo/i.test(text))return'wurst';
+  if(/schwein|schnitzel|schweinefilet/i.test(text))return'schwein';
+  return'veggi';
+}
+
+function pdfParse(items){
+  const lines=pdfGroupLines(items);
+  const fullRaw=lines.map(l=>l.text).join('\n');
+
+  // Clean lines: skip parenthetical blocks (allergen annotations)
+  const cleanLines=[];
+  let enthBuf='';
+  for(const ln of lines){
+    const t=ln.text;
+    if(/^\(/.test(t))enthBuf=t;
+    else if(enthBuf)enthBuf+=' '+t;
+    if(enthBuf){
+      let d=0;for(const ch of enthBuf){if(ch==='(')d++;else if(ch===')')d--;}
+      if(d<=0)enthBuf='';
+      continue;
+    }
+    cleanLines.push(ln);
+  }
+
+  const r={name:'',subtitle:'',time:'',kcal:'',diff:'Einfach',protein:'huhn',
+    nProt:'',nHc:'',nFett:'',nFibra:'',ings:[],vorrat:'',steps:[],tip:'',allergen:''};
+
+  // Name: biggest text page 1
+  const p1=items.filter(i=>i.page===1);
+  const big=p1.filter(i=>i.h>10).sort((a,b)=>b.h-a.h);
+  if(big.length){r.name=big[0].text;const rest=big.filter(i=>i.text!==r.name&&i.h>6&&i.h<big[0].h-1);if(rest.length)r.subtitle=rest[0].text;}
+  if(!r.name&&cleanLines.length)r.name=cleanLines[0].text;
+
+  // Time / kcal / diff
+  const tM=fullRaw.match(/(\d{1,3})\s*Min/i);if(tM)r.time=tM[1];
+  const kM=fullRaw.match(/(\d{3,4})\s*kcal/i);if(kM)r.kcal=kM[1];
+  if(/Anspruchsvoll/i.test(fullRaw))r.diff='Anspruchsvoll';
+  else if(/Mittel/i.test(fullRaw))r.diff='Mittel';
+
+  r.protein=pdfDetectProtein(fullRaw);
+
+  // Nährwerte
+  const nL=fullRaw.match(/(\d+[.,]?\d*)\s*g?\s*Eiweiß[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*Kohlenhydrate[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*Fett[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*Ballaststoffe/i);
+  if(nL){r.nProt=nL[1];r.nHc=nL[2];r.nFett=nL[3];r.nFibra=nL[4];}
+  else{
+    const eM=fullRaw.match(/Eiweiß[\s·:]{0,5}([\d.,]+)\s*g/i);if(eM)r.nProt=eM[1];
+    const cM=fullRaw.match(/Kohlenhydrate[\s·:]{0,5}([\d.,]+)\s*g/i);if(cM)r.nHc=cM[1];
+    const fM=fullRaw.match(/Fett[\s·:]{0,5}([\d.,]+)\s*g/i);if(fM)r.nFett=fM[1];
+    const bM=fullRaw.match(/Ballaststoffe[\s·:]{0,5}([\d.,]+)\s*g/i);if(bM)r.nFibra=bM[1];
+  }
+
+  // Ingredients
+  const UNITS_END=/\s+(\d[\d.,]*\s*(?:g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack)\.?)$/i;
+  const UNITS_ONLY=/^(\d[\d.,]*)\s*(g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack)\.?\s*$/i;
+  const TDASH=/\s*[–—]\s*$/;
+  const ings=[],vorrat=[];
+  const NONE=0,ZUT=1,VOR=2;let sec=NONE;
+  for(let i=0;i<cleanLines.length;i++){
+    const raw=cleanLines[i].text;
+    if(/^(ZUTATEN|Zutaten)\b/i.test(raw)){sec=ZUT;continue;}
+    if(/^Was Du zu Hause haben solltest/i.test(raw)){sec=VOR;continue;}
+    if(/^(AUS DEM VORRAT|Aus dem Vorrat)\b/i.test(raw)){sec=VOR;continue;}
+    if(/^(Kochutensilien|Nährwertangaben|ZUBEREITUNG|Zubereitung)\b/i.test(raw))break;
+    if(sec===NONE)continue;
+    if(/^[•·\-]\s/.test(raw))continue;
+    const t=raw.replace(TDASH,'').trim();
+    if(!t||/^[–—]$/.test(t)||/^nach Geschmack/i.test(t)||/^Für \d/i.test(t))continue;
+    if(sec===VOR){vorrat.push(t);continue;}
+    const eq=t.match(UNITS_END);
+    if(eq){const qty=eq[1].trim();const name=t.slice(0,t.length-eq[0].length).trim();if(name.length>1)ings.push({name,qty});i++;continue;}
+    const name=t;if(name.length<2)continue;
+    let j=i+1,qty='';
+    while(j<cleanLines.length){const n=cleanLines[j].text.trim();if(/^\(/.test(n)||!n||/^nach Geschmack/i.test(n)){j++;continue;}if(UNITS_ONLY.test(n)){qty=n;j++;break;}break;}
+    ings.push({name,qty});i=j-1;
+  }
+  r.ings=ings;r.vorrat=vorrat.join(', ');
+
+  // Steps
+  pdfParseSteps._tip='';
+  const steps=[];let inZub=false,cur=null;
+  for(let i=0;i<cleanLines.length;i++){
+    let t=cleanLines[i].text;
+    if(/^Zubereitung$/i.test(t)){inZub=true;continue;}
+    if(!inZub)continue;
+    if(/^(Nährwert|Allergen|Empty|Guten Appetit)/i.test(t))continue;
+    t=t.replace(/^\d\s+/,'');if(/^\d$/.test(t))continue;
+    if(/^Tipp\s*:/i.test(t)){pdfParseSteps._tip=t.replace(/^Tipp\s*:\s*/i,'').trim();continue;}
+    const nxt=cleanLines[i+1]?cleanLines[i+1].text.replace(/^\d\s+/,''):'';
+    const nxtBody=nxt.length>25&&!/^\d$/.test(nxt.trim());
+    const isTitle=t.length<=55&&/^[A-ZÄÖÜ]/.test(t)&&!t.endsWith('.')&&!t.endsWith(',')&&!/^\d/.test(t)&&nxtBody;
+    if(isTitle){if(cur&&cur.text.trim())steps.push(cur);cur={title:t,text:''};}
+    else if(cur&&t.length>5)cur.text+=(cur.text?' ':'')+t;
+  }
+  if(cur&&cur.text.trim())steps.push(cur);
+  r.steps=steps.slice(0,8);r.tip=pdfParseSteps._tip;
+
+  // Allergens
+  const algM=fullRaw.match(/Allergene\b[:\s]+([\s\S]{0,300}?)(?:\n\n|$)/im);
+  if(algM){
+    const seen=new Set();
+    algM[1].split(/[•·,\n]/).map(s=>s.trim()).filter(s=>s.length>1&&s.length<40&&!/^\d/.test(s)).forEach(p=>seen.add(p));
+    r.allergen=[...seen].slice(0,10).join(' · ');
+  }
+
+  return r;
+}
+function pdfParseSteps(){}
+
+// ── POPULATE FORM ────────────────────────────────────
+function pdfPopulate(r){
+  pdfSetProt(r.protein);
+  document.getElementById('pdfName').value=r.name||'';
+  document.getElementById('pdfSub2').value=r.subtitle||'';
+  document.getElementById('pdfTime').value=r.time||'';
+  document.getElementById('pdfKcal').value=r.kcal||'';
+  document.getElementById('pdfDiff').value=r.diff||'Einfach';
+  document.getElementById('pdfProt').value=r.nProt||'';
+  document.getElementById('pdfHc').value=r.nHc||'';
+  document.getElementById('pdfFett').value=r.nFett||'';
+  document.getElementById('pdfFibra').value=r.nFibra||'';
+  document.getElementById('pdfVorrat').value=r.vorrat||'';
+  document.getElementById('pdfTip').value=r.tip||'';
+  document.getElementById('pdfAllergen').value=r.allergen||'';
+  const il=document.getElementById('pdfIngList');il.innerHTML='';
+  (r.ings.length?r.ings:[{name:'',qty:''}]).forEach(ing=>pdfAddIng(ing.name,ing.qty));
+  const sl=document.getElementById('pdfStepList');sl.innerHTML='';
+  if(r.steps.length)r.steps.forEach(s=>pdfAddStep(s.title,s.text));
+  else for(let k=0;k<5;k++)pdfAddStep('','');
+  pdfSetStatus('warn',r.steps.length?'✓ Revisa los campos antes de añadir al planificador':'⚠️ Los pasos no están en este PDF — introdúcelos manualmente.');
+  pdfSelectedWo=null;pdfSelectedDay=null;
+  pdfRenderDayPicker();
+}
+
+function pdfSetProt(p){
+  pdfProtein=p;
+  document.querySelectorAll('.prot-btn').forEach(b=>b.classList.toggle('active',b.dataset.p===p));
+}
+function pdfSetStatus(cls,msg){const s=document.getElementById('pdfStatus');s.className='pdf-status'+(cls?' '+cls:'');s.textContent=msg;}
+
+function pdfAddIng(name='',qty=''){
+  const il=document.getElementById('pdfIngList');
+  const row=document.createElement('div');row.className='ing-row';
+  row.innerHTML=`<input type="text" placeholder="Zutat" value="${pdfEsc(name)}"><input type="text" placeholder="Menge" value="${pdfEsc(qty)}"><button class="pdf-del-btn" onclick="this.parentElement.remove()">×</button>`;
+  il.appendChild(row);
+}
+function pdfAddStep(title='',text=''){
+  const sl=document.getElementById('pdfStepList');
+  const num=sl.children.length+1;
+  const row=document.createElement('div');row.className='step-row';
+  row.innerHTML=`<div class="step-badge">${num}</div><textarea placeholder="Beschreibung…">${pdfEsc(text)}</textarea><input type="text" placeholder="Titel" value="${pdfEsc(title)}"><button class="pdf-del-btn" onclick="pdfRemoveStep(this)">×</button>`;
+  sl.appendChild(row);
+}
+function pdfRemoveStep(btn){btn.parentElement.remove();document.querySelectorAll('#pdfStepList .step-badge').forEach((b,i)=>b.textContent=i+1);}
+function pdfEsc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── DAY PICKER ───────────────────────────────────────
+let pdfSelectedWo=null, pdfSelectedDay=null;
+
+function pdfRenderDayPicker(){
+  const wrap=document.getElementById('pdfDayPicker');
+  if(!wrap)return;
+  const DAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  let html=`<div class="dpick-headers"><div></div>${DAYS.map(d=>`<div class="dpick-dname">${d}</div>`).join('')}</div>`;
+  for(let w=0;w<4;w++){
+    const mon=getMon(w);
+    const kw=getKW(mon);
+    html+=`<div class="dpick-week"><div class="dpick-wlabel">S${kw}</div>`;
+    for(let d=0;d<7;d++){
+      const date=getDayDate(w,d);
+      const dd=date.getDate();
+      const mm=date.toLocaleDateString('es-ES',{month:'short'});
+      const rec=recipes.find(r=>r.wo===w&&r.day===d);
+      const isSel=pdfSelectedWo===w&&pdfSelectedDay===d;
+      if(rec){
+        html+=`<div class="dpick-day taken"><div class="dpick-dn">${DAYS[d]}</div><div class="dpick-dd">${dd}</div><div class="dpick-rec">${rec.name.split(' ').slice(0,2).join(' ')}</div></div>`;
+      } else {
+        html+=`<div class="dpick-day free${isSel?' selected':''}" onclick="pdfSelectDay(${w},${d},this)"><div class="dpick-dn">${DAYS[d]}</div><div class="dpick-dd">${dd}</div><div class="dpick-rec">${mm}</div></div>`;
+      }
+    }
+    html+=`</div>`;
+  }
+  wrap.innerHTML=html;
+}
+
+function pdfSelectDay(wOff,day,el){
+  pdfSelectedWo=wOff; pdfSelectedDay=day;
+  // Update hidden date input for compatibility
+  const date=getDayDate(wOff,day);
+  const iso=date.toISOString().split('T')[0];
+  document.getElementById('pdfDate').value=iso;
+  // Re-render to update selection highlight
+  pdfRenderDayPicker();
+}
+
+// ── ADD TO PLANNER ───────────────────────────────────
+function pdfAddToPlanner(){
+  const name=document.getElementById('pdfName').value.trim();
+  if(!name){pdfSetStatus('err','Falta el nombre de la receta.');return;}
+  const dateStr=document.getElementById('pdfDate').value;
+  if(!dateStr){pdfSetStatus('err','Elige una fecha del calendario.');return;}
+
+  // Use selected day from picker
+  if(pdfSelectedWo===null||pdfSelectedDay===null){pdfSetStatus('err','Selecciona un día del calendario.');return;}
+  const wOff=pdfSelectedWo, dayIdx=pdfSelectedDay;
+  if(recipes.find(r=>r.wo===wOff&&r.day===dayIdx)){pdfSetStatus('err','Ese día ya está ocupado.');return;}
+
+  // Build ings array
+  const ings=[];
+  document.querySelectorAll('#pdfIngList .ing-row').forEach(row=>{
+    const ins=row.querySelectorAll('input');
+    const n=ins[0].value.trim(),q=ins[1].value.trim();
+    if(n)ings.push({name:n,qty:q||null});
+  });
+
+  // Build steps array
+  const steps=[];
+  document.querySelectorAll('#pdfStepList .step-row').forEach((row,i)=>{
+    const ta=row.querySelector('textarea').value.trim();
+    const ti=row.querySelector('input').value.trim();
+    if(ta)steps.push({title:ti,text:ta});
+  });
+
+  const macros={
+    prot:parseFloat(document.getElementById('pdfProt').value)||null,
+    hc:parseFloat(document.getElementById('pdfHc').value)||null,
+    fett:parseFloat(document.getElementById('pdfFett').value)||null,
+    fibra:parseFloat(document.getElementById('pdfFibra').value)||null
+  };
+
+  // Add to planner data structures
+  recipes.push({
+    id:nid++,
+    name,
+    type:pdfProtein,
+    time:document.getElementById('pdfTime').value.trim(),
+    ings,
+    wo:wOff,
+    day:dayIdx
+  });
+
+  recipeData[name]={
+    subtitle:document.getElementById('pdfSub2').value.trim(),
+    kcal:parseInt(document.getElementById('pdfKcal').value)||null,
+    level:document.getElementById('pdfDiff').value,
+    steps,
+    mainPhoto:null,
+    ...macros
+  };
+
+  save();saveRecipes();render();
+  showToast(`"${name}" añadida al ${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'][dayIdx]}`);
+
+  // Reset form
+  pdfSelectedWo=null;pdfSelectedDay=null;
+  document.getElementById('pdfForm').style.display='none';
+  document.getElementById('pdfDrop').classList.remove('loaded');
+  document.getElementById('pdfIcon').textContent='📥';
+  document.getElementById('pdfLabel').textContent='PDF HelloFresh aquí o clic para seleccionar';
+  document.getElementById('pdfFileIn').value='';
+  pdfSetStatus('','');
+
+  // Switch to calendar
+  switchTab('plan');
+}
+
+// ── DOWNLOAD HTML (standalone) ───────────────────────
+function pdfDownloadHtml(){
+  const name=document.getElementById('pdfName').value.trim()||'rezept';
+  const date=document.getElementById('pdfDate').value;
+  // Build full HTML using recipe card format
+  const p=pdfProtein;
+  const PC={huhn:{bg:'#f5e6a3',dark:'#7a6318',mid:'#d4bc4a'},schwein:{bg:'#e8d5f5',dark:'#5e3a85',mid:'#b08ad4'},fisch:{bg:'#b8d9f0',dark:'#1a4f72',mid:'#5a9ec4'},veggi:{bg:'#c8e6c9',dark:'#2e6b30',mid:'#6db870'},rind:{bg:'#e8c9a8',dark:'#7a4520',mid:'#c48050'},wurst:{bg:'#fad9b0',dark:'#8a4e10',mid:'#e09040'}};
+  const pc=PC[p];
+  let ingHtml='';
+  document.querySelectorAll('#pdfIngList .ing-row').forEach(row=>{const ins=row.querySelectorAll('input');const n=ins[0].value.trim(),q=ins[1].value.trim();if(n)ingHtml+=`<div class="ing-item"><span class="ing-name">${n}</span><span class="ing-qty">${q||'—'}</span></div>\n`;});
+  const vorrat=document.getElementById('pdfVorrat').value.trim();
+  if(vorrat)ingHtml+=`<div class="ing-section">Aus dem Vorrat</div><div class="ing-item"><span class="ing-name">${vorrat}</span><span class="ing-qty">—</span></div>\n`;
+  let stepsHtml='';
+  document.querySelectorAll('#pdfStepList .step-row').forEach((row,i)=>{const ta=row.querySelector('textarea').value.trim();const ti=row.querySelector('input').value.trim();if(ta){stepsHtml+=`<div class="step"><div class="step-num">${i+1}</div><div class="step-content">`;if(ti)stepsHtml+=`<span class="step-title">${ti}</span>`;stepsHtml+=`${ta}</div></div>\n`;}});
+  const tip=document.getElementById('pdfTip').value.trim();if(tip)stepsHtml+=`<div class="tip"><strong>Tipp:</strong> ${tip}</div>`;
+  const allergen=document.getElementById('pdfAllergen').value.trim();
+  const dateStr=date?new Date(date).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}):'';
+  const html=`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${name}</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Lora:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
+:root{--hd:${pc.dark};--hm:${pc.mid};--hbg:${pc.bg};--ink:#1c1c1c;--muted:#5a5a5a;--rule:#ddd;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'DM Sans',sans-serif;font-size:11.5px;background:#faf8f5;padding:20px;}
+.pbtn{max-width:900px;margin:0 auto 12px;display:flex;justify-content:space-between;align-items:center;}
+.pbtn button{background:#5a5a5a;color:white;border:none;padding:9px 22px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-radius:3px;}
+.recipe{max-width:900px;margin:0 auto;background:white;border:1px solid var(--rule);}
+.rh{background:var(--hbg);color:var(--hd);padding:16px 22px 14px;display:flex;justify-content:space-between;align-items:flex-end;}
+.rh h2{font-family:'Lora',serif;font-size:20px;color:var(--hd);}
+.rh .sub{font-size:10px;opacity:.75;margin-top:3px;color:var(--hd);}
+.pills{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.pill{background:rgba(255,255,255,.55);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--hd);}
+.nb{padding:6px 22px;border-bottom:1px solid var(--rule);background:rgba(0,0,0,.03);}
+.nb-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ni{font-size:10.5px;color:var(--hd);}.ni strong{font-weight:700;}.ns{color:#bbb;font-size:10px;}.np{margin-left:auto;font-size:9.5px;color:#999;}
+.body{display:grid;grid-template-columns:220px 1fr;}
+.ings{border-right:1px solid var(--rule);padding:16px;}
+.ct{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--hd);margin-bottom:8px;padding-bottom:4px;border-bottom:1.5px solid var(--hm);}
+.ii{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #ebebeb;gap:6px;}
+.in{flex:1;}.iq{font-weight:600;color:var(--muted);font-size:10.5px;}
+.is{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--hd);margin:8px 0 3px;opacity:.7;}
+.steps{padding:16px 18px;}
+.step{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start;padding-bottom:10px;border-bottom:1px solid #f0efec;}
+.sn{background:var(--hd);color:white;font-size:10px;font-weight:800;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sc{flex:1;line-height:1.45;}.st{font-weight:700;font-size:11.5px;color:var(--hd);display:block;margin-bottom:3px;}
+.tip{margin-top:10px;padding:7px 10px;background:#f9f9f7;border-left:3px solid var(--hm);font-size:10.5px;color:var(--muted);}.tip strong{color:var(--hd);}
+.alg{grid-column:1/-1;border-top:1px solid var(--rule);padding:6px 16px;font-size:10px;color:var(--muted);background:#fafafa;}.alg span{font-weight:600;color:var(--ink);}
+@media print{body{background:white;padding:0;}.pbtn{display:none;}.recipe{border:none;margin:0;max-width:100%;}.rh,.sn,.tip,.nb{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head><body>
+<div class="pbtn">${dateStr?`<span style="font-size:12px;color:#888">📅 ${dateStr}</span>`:'<span></span>'}<button onclick="window.print()">🖨️ Drucken</button></div>
+<div class="recipe">
+<div class="rh"><div><h2>${name}</h2>${document.getElementById('pdfSub2').value.trim()?`<div class="sub">${document.getElementById('pdfSub2').value.trim()}</div>`:''}</div>
+<div class="pills">${document.getElementById('pdfTime').value?`<div class="pill">⏱ ${document.getElementById('pdfTime').value} Min</div>`:''}<div class="pill">🔥 ${document.getElementById('pdfKcal').value||'—'} kcal</div><div class="pill">👨‍🍳 ${document.getElementById('pdfDiff').value}</div><div class="pill">👥 2 Personen</div></div></div>
+${(document.getElementById('pdfProt').value||document.getElementById('pdfHc').value)?`<div class="nb"><div class="nb-inner">${document.getElementById('pdfProt').value?`<span class="ni"><strong>${document.getElementById('pdfProt').value}g</strong> Eiweiß</span><span class="ns">·</span>`:''}${document.getElementById('pdfHc').value?`<span class="ni"><strong>${document.getElementById('pdfHc').value}g</strong> Kohlenhydrate</span><span class="ns">·</span>`:''}${document.getElementById('pdfFett').value?`<span class="ni"><strong>${document.getElementById('pdfFett').value}g</strong> Fett</span><span class="ns">·</span>`:''}${document.getElementById('pdfFibra').value?`<span class="ni"><strong>${document.getElementById('pdfFibra').value}g</strong> Ballaststoffe</span>`:''}${document.getElementById('pdfProt').value?`<span class="np">pro Portion</span>`:''}</div></div>`:''}
+<div class="body"><div class="ings"><div class="ct">Zutaten</div>${ingHtml}</div><div class="steps"><div class="ct">Zubereitung</div>${stepsHtml}</div><div class="alg"><span>Allergene:</span> ${allergen||'—'}</div></div></div>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=date?`rezept_${date}.html`:`rezept_${name.substring(0,30).replace(/\s+/g,'-')}.html`;a.click();
+}
+</script>
+
 </body>
 </html>
