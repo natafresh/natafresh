@@ -292,7 +292,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .rmodal-step{display:flex;gap:8px;margin-bottom:10px;font-size:12px;line-height:1.45;}
 .rmodal-step:last-child{margin-bottom:0;}
 .rmodal-step-n{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--white);flex-shrink:0;margin-top:1px;}
-.step-qty{font-weight:800;color:inherit;font-size:.95em;white-space:nowrap;} .rmodal-step-t{font-weight:600;font-size:11px;display:block;margin-bottom:2px;}
+.step-qty{font-weight:800;color:#9b1c1c;font-size:.95em;white-space:nowrap;} .rmodal-step-t{font-weight:600;font-size:11px;display:block;margin-bottom:2px;}
 @media(max-width:480px){.rmodal-body{grid-template-columns:1fr;}.rmodal-ings{border-right:none;border-bottom:1px solid var(--border-light);}}
 
 /* ADD RECIPE MODAL */
@@ -1988,30 +1988,43 @@ function saveRecipe(){
 // RECIPE MODAL
 
 // ── ANNOTATE STEPS WITH QUANTITIES ──────────────────────────
-// For each ingredient with a qty, find mentions in step text and prepend qty
 function annotateStep(text, ings){
   if(!text||!ings||!ings.length) return text;
-  // Sort by name length descending so longer names match first (e.g. "saure Sahne, Bio" before "Sahne")
-  const sorted=[...ings].filter(i=>i.name&&i.qty).sort((a,b)=>b.name.length-a.name.length);
-  let result=text;
-  for(const ing of sorted){
+
+  // Build candidate tokens from each ingredient name:
+  // Use full name + each individual word (length >= 4) as fallback
+  const candidates=[];
+  for(const ing of ings){
+    if(!ing.name||!ing.qty) continue;
+    const qty=String(ing.qty).trim();
+    if(!qty||qty==='—'||qty==='null'||qty==='undefined') continue;
     const name=ing.name.trim();
-    const qty=ing.qty.trim();
-    if(!name||!qty||qty==='—'||qty==='null') continue;
-    // Build a regex that matches the ingredient name as a whole word (case-insensitive)
-    // Use word boundary or space/punctuation around it
+    // Full name first (highest priority)
+    candidates.push({token:name, qty, len:name.length});
+    // Also add significant words (>=4 chars) from the name
+    name.split(/[\s,\-\/]+/).forEach(w=>{
+      if(w.length>=4) candidates.push({token:w, qty, len:w.length});
+    });
+  }
+  // Sort longest first to avoid partial clobbering
+  candidates.sort((a,b)=>b.len-a.len);
+
+  let result=text;
+  const annotated=new Set(); // avoid double-annotating same qty span
+
+  for(const {token,qty} of candidates){
+    if(annotated.has(token.toLowerCase())) continue;
     try{
-      const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      const re=new RegExp('(?<![\\w])('+escaped+')(?![\\w])','gi');
+      const esc=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      // Word-boundary aware: not preceded/followed by word char
+      const re=new RegExp('(?<![\\wäöüÄÖÜß])('+esc+')(?![\\wäöüÄÖÜß])','i');
       if(re.test(result)){
-        // Reset lastIndex
-        const re2=new RegExp('(?<![\\w])('+escaped+')(?![\\w])','gi');
-        // Only annotate first occurrence to avoid clutter
         let done=false;
-        result=result.replace(re2,(match)=>{
+        result=result.replace(new RegExp('(?<![\\wäöüÄÖÜß])('+esc+')(?![\\wäöüÄÖÜß])','gi'),(match)=>{
           if(done) return match;
           done=true;
-          return `<span class="step-qty">${qty}</span> ${match}`;
+          annotated.add(token.toLowerCase());
+          return `<span class="step-qty">${qty}</span> ${match}`;
         });
       }
     }catch(e){}
