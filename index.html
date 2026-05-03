@@ -4559,9 +4559,17 @@ function pdfProcessText(){
   const raw = document.getElementById('pdfTextInput').value.trim();
   if(!raw){ pdfSetStatus('err','Pega el texto de la receta antes de continuar.'); return; }
   pdfSetStatus('','');
-  // Convert plain text into fake "items" that the parser understands
-  // Split by lines, assign fake positions so groupLines works (each line = one item)
-  const lines = raw.split(/\n/);
+  // Pre-clean: remove lines ending with "-image", "Nutri-Score" blocks, image alt-text
+  const lines = raw.split(/\n/).filter(l => {
+    const t = l.trim();
+    if(!t) return true; // keep empty lines (used as separators)
+    if(/-image$/i.test(t)) return false;
+    if(/^Nutri-Score/i.test(t)) return false;
+    if(/^Der Nutri-Score/i.test(t)) return false;
+    if(/^Alles zum Nutri/i.test(t)) return false;
+    if(/^Bitte beachte auch/i.test(t)) return false;
+    return true;
+  });
   const items = lines.map((text, i) => ({
     text: text.trim(),
     x: 50,
@@ -4640,7 +4648,7 @@ function pdfParse(items){
   let enthBuf='';
   for(const ln of lines){
     const t=ln.text;
-    if(/\bimagen\b/i.test(t)) continue; // skip any line with 'imagen' (alt-text)
+    if(/\bimagen\b/i.test(t)||/-image$/i.test(t)||/^[A-Za-zÄÖÜäöüß(),' -]+-image$/i.test(t)) continue; // skip alt-text lines
     if(/^\(/.test(t))enthBuf=t;
     else if(enthBuf)enthBuf+=' '+t;
     if(enthBuf){
