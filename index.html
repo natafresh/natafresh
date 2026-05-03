@@ -1101,11 +1101,23 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .dpick-dname{font-size:9px;font-weight:600;color:var(--faint);text-align:center;text-transform:uppercase;letter-spacing:.04em;}
 </style>
 
-<div class="pdf-drop" id="pdfDrop" onclick="document.getElementById('pdfFileIn').click()">
-  <div id="pdfIcon" style="font-size:32px;margin-bottom:8px;">📥</div>
-  <div id="pdfLabel" style="font-size:13px;font-weight:600;color:var(--muted);">PDF HelloFresh aquí o clic para seleccionar</div>
-  <div id="pdfSub" style="font-size:11px;color:var(--faint);margin-top:4px;">El PDF completo (varias páginas)</div>
-  <input type="file" id="pdfFileIn" accept="application/pdf" style="display:none">
+<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+  <button id="pdfModeBtn" onclick="pdfSetMode('pdf')" style="flex:1;padding:9px;border:none;background:var(--ink);color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">📄 PDF</button>
+  <button id="textModeBtn" onclick="pdfSetMode('text')" style="flex:1;padding:9px;border:none;background:white;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">📋 Pegar texto</button>
+</div>
+
+<div id="pdfModePanel">
+  <div class="pdf-drop" id="pdfDrop" onclick="document.getElementById('pdfFileIn').click()">
+    <div id="pdfIcon" style="font-size:32px;margin-bottom:8px;">📥</div>
+    <div id="pdfLabel" style="font-size:13px;font-weight:600;color:var(--muted);">PDF aquí o clic para seleccionar</div>
+    <div id="pdfSub" style="font-size:11px;color:var(--faint);margin-top:4px;">El PDF completo (varias páginas)</div>
+    <input type="file" id="pdfFileIn" accept="application/pdf" style="display:none">
+  </div>
+</div>
+
+<div id="textModePanel" style="display:none;">
+  <textarea id="pdfTextInput" placeholder="Pega aquí el texto de la receta (en alemán o español)…&#10;&#10;Incluye: nombre, ingredientes, pasos, nährwerte/valores nutricionales y alérgenos." style="width:100%;height:200px;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);resize:vertical;line-height:1.5;"></textarea>
+  <button onclick="pdfProcessText()" class="btn btn-dk" style="width:100%;margin-top:8px;padding:11px;font-size:13px;">✨ Procesar texto</button>
 </div>
 
 <div id="pdfForm" style="display:none;margin-top:4px;">
@@ -4533,6 +4545,41 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('pdfDate').value=today.toISOString().split('T')[0];
 });
 
+function pdfSetMode(mode){
+  const isPdf = mode === 'pdf';
+  document.getElementById('pdfModePanel').style.display = isPdf ? 'block' : 'none';
+  document.getElementById('textModePanel').style.display = isPdf ? 'none' : 'block';
+  document.getElementById('pdfModeBtn').style.background = isPdf ? 'var(--ink)' : 'white';
+  document.getElementById('pdfModeBtn').style.color = isPdf ? 'white' : 'var(--muted)';
+  document.getElementById('textModeBtn').style.background = isPdf ? 'white' : 'var(--ink)';
+  document.getElementById('textModeBtn').style.color = isPdf ? 'var(--muted)' : 'white';
+}
+
+function pdfProcessText(){
+  const raw = document.getElementById('pdfTextInput').value.trim();
+  if(!raw){ pdfSetStatus('err','Pega el texto de la receta antes de continuar.'); return; }
+  pdfSetStatus('','');
+  // Convert plain text into fake "items" that the parser understands
+  // Split by lines, assign fake positions so groupLines works (each line = one item)
+  const lines = raw.split(/\n/);
+  const items = lines.map((text, i) => ({
+    text: text.trim(),
+    x: 50,
+    y: i * 20,
+    h: i < 3 ? 14 : 10, // first lines slightly taller = likely title
+    page: 1
+  }));
+  // Mark lines that look like section headers as larger (helps title detection)
+  items.forEach((it, i) => {
+    if(i === 0 && it.text.length > 3) it.h = 18; // first line = title
+    if(i === 1 && it.text.length > 3 && it.text.length < 60) it.h = 8; // subtitle
+  });
+  const parsed = pdfParse(items);
+  pdfPopulate(parsed);
+  document.getElementById('pdfForm').style.display = 'block';
+  document.getElementById('pdfForm').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 async function pdfProcess(file){
   pdfSetStatus('','');
   document.getElementById('pdfIcon').textContent='⏳';
@@ -4576,11 +4623,11 @@ function pdfGroupLines(items){
 }
 
 function pdfDetectProtein(text){
-  if(/hähnchen|huhn|hähncheninnen|geflügel|pute/i.test(text))return'huhn';
-  if(/lachs|fisch|garnelen|thunfisch|seelachs|kabeljau/i.test(text))return'fisch';
-  if(/rind|steak|hackfleisch|hüftsteak/i.test(text))return'rind';
-  if(/würstchen|wurst|bacon|speck|chorizo/i.test(text))return'wurst';
-  if(/schwein|schnitzel|schweinefilet/i.test(text))return'schwein';
+  if(/hähnchen|huhn|hähncheninnen|geflügel|pute|pollo|pavo|pechuga|contramuslo/i.test(text))return'huhn';
+  if(/lachs|fisch|garnelen|thunfisch|seelachs|kabeljau|salmón|salmon|pescado|gambas|atún|bacalao|merluza/i.test(text))return'fisch';
+  if(/rind|steak|hackfleisch|hüftsteak|ternera|buey|vacuno|res\b/i.test(text))return'rind';
+  if(/würstchen|wurst|bacon|speck|chorizo|salchicha|embutido|jamón/i.test(text))return'wurst';
+  if(/schwein|schnitzel|schweinefilet|cerdo|lomo|costilla|panceta/i.test(text))return'schwein';
   return'veggi';
 }
 
@@ -4593,6 +4640,7 @@ function pdfParse(items){
   let enthBuf='';
   for(const ln of lines){
     const t=ln.text;
+    if(/\bimagen\b/i.test(t)) continue; // skip any line with 'imagen' (alt-text)
     if(/^\(/.test(t))enthBuf=t;
     else if(enthBuf)enthBuf+=' '+t;
     if(enthBuf){
@@ -4610,48 +4658,56 @@ function pdfParse(items){
   const p1=items.filter(i=>i.page===1);
   const big=p1.filter(i=>i.h>10).sort((a,b)=>b.h-a.h);
   if(big.length){r.name=big[0].text;const rest=big.filter(i=>i.text!==r.name&&i.h>6&&i.h<big[0].h-1);if(rest.length)r.subtitle=rest[0].text;}
+  // Deduplicate subtitle if PDF repeats it (e.g. 'con calabacin...con calabacin...')
+  if(r.subtitle){const h=Math.ceil(r.subtitle.length/2);if(r.subtitle.slice(0,h)===r.subtitle.slice(h)||r.subtitle.slice(0,h)===r.subtitle.slice(-h))r.subtitle=r.subtitle.slice(0,h).trim();}
   if(!r.name&&cleanLines.length)r.name=cleanLines[0].text;
 
   // Time / kcal / diff
-  const tM=fullRaw.match(/(\d{1,3})\s*Min/i);if(tM)r.time=tM[1];
+  const tM=fullRaw.match(/(\d{1,3})\s*(Min|min|minutos)/i);if(tM)r.time=tM[1];
   const kM=fullRaw.match(/(\d{3,4})\s*kcal/i);if(kM)r.kcal=kM[1];
-  if(/Anspruchsvoll/i.test(fullRaw))r.diff='Anspruchsvoll';
-  else if(/Mittel/i.test(fullRaw))r.diff='Mittel';
+  if(/Anspruchsvoll|Difícil|Avanzado/i.test(fullRaw))r.diff='Anspruchsvoll';
+  else if(/Mittel|Medio|Intermedio/i.test(fullRaw))r.diff='Mittel';
 
   r.protein=pdfDetectProtein(fullRaw);
 
-  // Nährwerte
-  const nL=fullRaw.match(/(\d+[.,]?\d*)\s*g?\s*Eiweiß[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*Kohlenhydrate[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*Fett[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*Ballaststoffe/i);
-  if(nL){r.nProt=nL[1];r.nHc=nL[2];r.nFett=nL[3];r.nFibra=nL[4];}
+  // Nährwerte — DE + ES patterns, both "Label value" and "value Label" orders
+  const nL=fullRaw.match(/(\d+[.,]?\d*)\s*g?\s*(Eiweiß|Proteínas?|Proteina)[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*(Kohlenhydrate|Hidratos?(?: de carbono)?|Carbohidratos?)[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*(Fett\b|Grasas? totales?|Grasas?)[\s\S]{0,5}(\d+[.,]?\d*)\s*g?\s*(Ballaststoffe|Fibra(?: alimentaria)?)/i);
+  if(nL){r.nProt=nL[1];r.nHc=nL[3];r.nFett=nL[5];r.nFibra=nL[7];}
   else{
-    const eM=fullRaw.match(/Eiweiß[\s·:]{0,5}([\d.,]+)\s*g/i);if(eM)r.nProt=eM[1];
-    const cM=fullRaw.match(/Kohlenhydrate[\s·:]{0,5}([\d.,]+)\s*g/i);if(cM)r.nHc=cM[1];
-    const fM=fullRaw.match(/Fett[\s·:]{0,5}([\d.,]+)\s*g/i);if(fM)r.nFett=fM[1];
-    const bM=fullRaw.match(/Ballaststoffe[\s·:]{0,5}([\d.,]+)\s*g/i);if(bM)r.nFibra=bM[1];
+    const tryMatch=(re)=>{ const m=fullRaw.match(re); return m?m[m.length-1]:null; };
+    // "Label: value g" order
+    r.nProt  = tryMatch(/(Eiweiß|Proteínas?|Proteina)[\s·:\t]{0,8}([\d.,]+)\s*g/i) ||
+               tryMatch(/([\d.,]+)\s*g\s*(Eiweiß|Proteínas?)/i); // "value g Label" order
+    r.nHc    = tryMatch(/(Kohlenhydrate|Hidratos?(?: de carbono)?|Carbohidratos?)[\s·:\t]{0,8}([\d.,]+)\s*g/i) ||
+               tryMatch(/([\d.,]+)\s*g\s*(Kohlenhydrate|Hidratos?|Carbohidratos?)/i);
+    r.nFett  = tryMatch(/(\bFett\b|Grasas? totales?|\bGrasas?\b)[\s·:\t]{0,8}([\d.,]+)\s*g/i) ||
+               tryMatch(/([\d.,]+)\s*g\s*(\bFett\b|Grasas?)/i);
+    r.nFibra = tryMatch(/(Ballaststoffe|Fibra(?: alimentaria)?)[\s·:\t]{0,8}([\d.,]+)\s*g/i) ||
+               tryMatch(/([\d.,]+)\s*g\s*(Ballaststoffe|Fibra)/i);
   }
 
   // Ingredients
-  const UNITS_END=/\s+(\d[\d.,]*\s*(?:g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack)\.?)$/i;
-  const UNITS_ONLY=/^(\d[\d.,]*)\s*(g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack)\.?\s*$/i;
+  const UNITS_END=/\s*([½¼¾\d][\d.,\/]*\s*(?:g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack|pieza|piezas|unidad|unidades|cucharada|cucharadas)\.?)$/i;
+  const UNITS_ONLY=/^([½¼¾\d][\d.,\/]*)\s*(g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack|pieza|piezas|unidad|unidades|cucharada|cucharadas)\.?\s*$/i;
   const TDASH=/\s*[–—]\s*$/;
   const ings=[],vorrat=[];
   const NONE=0,ZUT=1,VOR=2;let sec=NONE;
   for(let i=0;i<cleanLines.length;i++){
     const raw=cleanLines[i].text;
-    if(/^(ZUTATEN|Zutaten)\b/i.test(raw)){sec=ZUT;continue;}
-    if(/^Was Du zu Hause haben solltest/i.test(raw)){sec=VOR;continue;}
-    if(/^(AUS DEM VORRAT|Aus dem Vorrat)\b/i.test(raw)){sec=VOR;continue;}
-    if(/^(Kochutensilien|Nährwertangaben|ZUBEREITUNG|Zubereitung)\b/i.test(raw))break;
+    if(/^(ZUTATEN|Zutaten|INGREDIENTES|Ingredientes)\b/i.test(raw)){sec=ZUT;continue;}
+    if(/^(Was Du zu Hause haben solltest|Lo que necesitas en casa|Lo que deber[íi]as tener en casa|En casa)/i.test(raw)){sec=VOR;continue;}
+    if(/^(AUS DEM VORRAT|Aus dem Vorrat|DE LA DESPENSA|De la despensa)\b/i.test(raw)){sec=VOR;continue;}
+    if(/^(Kochutensilien|Utensilios|Nährwertangaben|Información nutricional|ZUBEREITUNG|Zubereitung|PREPARACIÓN|Preparación)\b/i.test(raw))break;
     if(sec===NONE)continue;
     if(/^[•·\-]\s/.test(raw))continue;
     const t=raw.replace(TDASH,'').trim();
-    if(!t||/^[–—]$/.test(t)||/^nach Geschmack/i.test(t)||/^Für \d/i.test(t))continue;
+    if(!t||/^[–—]$/.test(t)||/^(nach Geschmack|para probar|a gusto|al gusto|al gusto)/i.test(t)||/^(Für|Para) \d/i.test(t))continue;
     if(sec===VOR){vorrat.push(t);continue;}
     const eq=t.match(UNITS_END);
     if(eq){const qty=eq[1].trim();const name=t.slice(0,t.length-eq[0].length).trim();if(name.length>1)ings.push({name,qty});i++;continue;}
     const name=t;if(name.length<2)continue;
     let j=i+1,qty='';
-    while(j<cleanLines.length){const n=cleanLines[j].text.trim();if(/^\(/.test(n)||!n||/^nach Geschmack/i.test(n)){j++;continue;}if(UNITS_ONLY.test(n)){qty=n;j++;break;}break;}
+    while(j<cleanLines.length){const n=cleanLines[j].text.trim();if(/^\(/.test(n)||!n||/^nach Geschmack|para probar|a gusto|al gusto/i.test(n)){j++;continue;}if(UNITS_ONLY.test(n)){qty=n;j++;break;}break;}
     ings.push({name,qty});i=j-1;
   }
   r.ings=ings;r.vorrat=vorrat.join(', ');
@@ -4661,11 +4717,17 @@ function pdfParse(items){
   const steps=[];let inZub=false,cur=null;
   for(let i=0;i<cleanLines.length;i++){
     let t=cleanLines[i].text;
-    if(/^Zubereitung$/i.test(t)){inZub=true;continue;}
+    if(/^(Zubereitung|Preparación|PREPARACIÓN|ZUBEREITUNG)$/i.test(t)){inZub=true;continue;}
     if(!inZub)continue;
     if(/^(Nährwert|Allergen|Empty|Guten Appetit)/i.test(t))continue;
     t=t.replace(/^\d\s+/,'');if(/^\d$/.test(t))continue;
-    if(/^Tipp\s*:/i.test(t)){pdfParseSteps._tip=t.replace(/^Tipp\s*:\s*/i,'').trim();continue;}
+    // Split "TitleBody" CamelCase: "Verduras cortadasPrecaliente" → title + body
+    const ccSplit = t.match(/^([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñß ,\'\"-]{3,50}?)([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñß].{15,})$/);
+    if(ccSplit){ t = ccSplit[2]; /* use body as t */ 
+      if(cur) cur.title = cur.title || ccSplit[1].trim();
+      else { /* new step with title */ if(inZub){ if(cur&&cur.text.trim())steps.push(cur); cur={title:ccSplit[1].trim(),text:ccSplit[2]}; continue; } }
+    }
+    if(/^(Tipp|Consejo|Nota)\s*:/i.test(t)){pdfParseSteps._tip=t.replace(/^(Tipp|Consejo|Nota)\s*:\s*/i,'').trim();continue;}
     const nxt=cleanLines[i+1]?cleanLines[i+1].text.replace(/^\d\s+/,''):'';
     const nxtBody=nxt.length>25&&!/^\d$/.test(nxt.trim());
     const isTitle=t.length<=55&&/^[A-ZÄÖÜ]/.test(t)&&!t.endsWith('.')&&!t.endsWith(',')&&!/^\d/.test(t)&&nxtBody;
@@ -4676,10 +4738,10 @@ function pdfParse(items){
   r.steps=steps.slice(0,8);r.tip=pdfParseSteps._tip;
 
   // Allergens
-  const algM=fullRaw.match(/Allergene\b[:\s]+([\s\S]{0,300}?)(?:\n\n|$)/im);
+  const algM=fullRaw.match(/(Allergene|Alérgenos|Alergenos)\b[:\s]+([\s\S]{0,300}?)(?:\n\n|$)/im);
   if(algM){
     const seen=new Set();
-    algM[1].split(/[•·,\n]/).map(s=>s.trim()).filter(s=>s.length>1&&s.length<40&&!/^\d/.test(s)).forEach(p=>seen.add(p));
+    algM[2].split(/[•·,\n]/).map(s=>s.trim()).filter(s=>s.length>1&&s.length<40&&!/^\d/.test(s)).forEach(p=>seen.add(p));
     r.allergen=[...seen].slice(0,10).join(' · ');
   }
 
@@ -4707,7 +4769,10 @@ function pdfPopulate(r){
   const sl=document.getElementById('pdfStepList');sl.innerHTML='';
   if(r.steps.length)r.steps.forEach(s=>pdfAddStep(s.title,s.text));
   else for(let k=0;k<5;k++)pdfAddStep('','');
-  pdfSetStatus('warn',r.steps.length?'✓ Revisa los campos antes de añadir al planificador':'⚠️ Los pasos no están en este PDF — introdúcelos manualmente.');
+  const missingNutri = !r.nProt && !r.nHc;
+  const stepsMsg = r.steps.length ? '✓ Revisa los campos antes de añadir.' : '⚠️ Los pasos no están en este PDF — introdúcelos manualmente.';
+  const nutriMsg = missingNutri ? ' Los valores nutricionales no están en este PDF — rellénalos tú si los tienes.' : '';
+  pdfSetStatus('warn', stepsMsg + nutriMsg);
   pdfSelectedWo=null;pdfSelectedDay=null;
   pdfRenderDayPicker();
 }
@@ -4735,14 +4800,22 @@ function pdfRemoveStep(btn){btn.parentElement.remove();document.querySelectorAll
 function pdfEsc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ── DAY PICKER ───────────────────────────────────────
-let pdfSelectedWo=null, pdfSelectedDay=null;
+let pdfSelectedWo=null, pdfSelectedDay=null, pdfPickerStart=0;
 
 function pdfRenderDayPicker(){
   const wrap=document.getElementById('pdfDayPicker');
   if(!wrap)return;
   const DAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  let html=`<div class="dpick-headers"><div></div>${DAYS.map(d=>`<div class="dpick-dname">${d}</div>`).join('')}</div>`;
-  for(let w=0;w<4;w++){
+  const WEEKS=4; // weeks shown at once
+  let html=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <button onclick="pdfPickerNav(-${WEEKS})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);">‹</button>
+    <span id="dpickRange" style="font-size:11px;color:var(--muted);font-weight:600;"></span>
+    <button onclick="pdfPickerNav(${WEEKS})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);">›</button>
+  </div>
+  <div class="dpick-headers"><div></div>${DAYS.map(d=>`<div class="dpick-dname">${d}</div>`).join('')}</div>`;
+  for(let wi=0;wi<WEEKS;wi++){
+    const w=pdfPickerStart+wi;
     const mon=getMon(w);
     const kw=getKW(mon);
     html+=`<div class="dpick-week"><div class="dpick-wlabel">S${kw}</div>`;
@@ -4753,7 +4826,10 @@ function pdfRenderDayPicker(){
       const rec=recipes.find(r=>r.wo===w&&r.day===d);
       const isSel=pdfSelectedWo===w&&pdfSelectedDay===d;
       if(rec){
-        html+=`<div class="dpick-day taken"><div class="dpick-dn">${DAYS[d]}</div><div class="dpick-dd">${dd}</div><div class="dpick-rec">${rec.name.split(' ').slice(0,2).join(' ')}</div></div>`;
+        const C={huhn:'#f5e6a3',schwein:'#e8d5f5',fisch:'#b8d9f0',veggi:'#c8e6c9',rind:'#e8c9a8',wurst:'#fad9b0'};
+        const CT={huhn:'#7a6318',schwein:'#5e3a85',fisch:'#1a4f72',veggi:'#2e6b30',rind:'#7a4520',wurst:'#8a4e10'};
+        const bg=C[rec.type]||'#eeece8'; const tc=CT[rec.type]||'#666';
+        html+=`<div class="dpick-day taken" style="background:${bg};opacity:.85;"><div class="dpick-dn" style="color:${tc}">${DAYS[d]}</div><div class="dpick-dd" style="color:${tc}">${dd}</div></div>`;
       } else {
         html+=`<div class="dpick-day free${isSel?' selected':''}" onclick="pdfSelectDay(${w},${d},this)"><div class="dpick-dn">${DAYS[d]}</div><div class="dpick-dd">${dd}</div><div class="dpick-rec">${mm}</div></div>`;
       }
@@ -4761,6 +4837,17 @@ function pdfRenderDayPicker(){
     html+=`</div>`;
   }
   wrap.innerHTML=html;
+  // Update range label
+  const first=getDayDate(pdfPickerStart,0);
+  const last=getDayDate(pdfPickerStart+WEEKS-1,6);
+  const fmt=d=>d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+  const el=document.getElementById('dpickRange');
+  if(el) el.textContent=fmt(first)+' – '+fmt(last);
+}
+
+function pdfPickerNav(delta){
+  pdfPickerStart=Math.max(-8,pdfPickerStart+delta); // don't go before 8 weeks ago
+  pdfRenderDayPicker();
 }
 
 function pdfSelectDay(wOff,day,el){
@@ -4792,6 +4879,9 @@ function pdfAddToPlanner(){
     const n=ins[0].value.trim(),q=ins[1].value.trim();
     if(n)ings.push({name:n,qty:q||null});
   });
+  // Add vorrat items as individual ings with no qty (shown in modal & shopping list)
+  const vorratVal=document.getElementById('pdfVorrat').value.trim();
+  if(vorratVal){vorratVal.split(',').map(s=>s.trim()).filter(Boolean).forEach(v=>ings.push({name:v,qty:null}));}
 
   // Build steps array
   const steps=[];
@@ -4813,7 +4903,7 @@ function pdfAddToPlanner(){
     id:nid++,
     name,
     type:pdfProtein,
-    time:document.getElementById('pdfTime').value.trim(),
+    time:(document.getElementById('pdfTime').value.trim()?document.getElementById('pdfTime').value.trim()+' Min':''),
     ings,
     wo:wOff,
     day:dayIdx
