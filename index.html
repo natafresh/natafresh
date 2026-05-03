@@ -3712,7 +3712,7 @@ function renderCookPhase(){
     let html=`<div class="cook-progress">Paso ${_cookStepIdx+1} de ${total}</div>`;
     if(step.photo)html+=`<img class="cook-step-img" src="${step.photo}" alt="${step.title}"/>`;
     if(step.title)html+=`<div class="cook-step-title">${step.title}</div>`;
-    html+=`<div class="cook-step-text">${step.text}</div>`;
+    html+=`<div class="cook-step-text">${annotateStep(step.text,_cookData.ings)}</div>`;
     if(_cookStepIdx===total-1&&_cookData.tip)html+=`<div style="margin-top:16px;padding:10px 12px;background:var(--light);border-radius:8px;font-size:13px;color:var(--muted);"><strong style="color:var(--ink);">Tipp:</strong> ${_cookData.tip}</div>`;
     body.innerHTML=html;
     let btns='';
@@ -4772,7 +4772,18 @@ function pdfParse(items){
     const nxtBody=nxt.length>25&&!/^\d$/.test(nxt.trim());
     const isTitle=t.length<=55&&/^[A-ZÄÖÜ]/.test(t)&&!t.endsWith('.')&&!t.endsWith(',')&&!/^\d/.test(t)&&nxtBody;
     if(isTitle){if(cur&&cur.text.trim())steps.push(cur);cur={title:t,text:''};}
-    else if(cur&&t.length>5)cur.text+=(cur.text?' ':'')+t;
+    else if(cur&&t.length>5){
+      // Strip trailing embedded next-step header like "...15 minutos. 2Verduras al horno"
+      const trailStep=t.match(/^(.*?\.\s*)(\d)([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñA-Za-z ]{3,})$/);
+      if(trailStep){
+        cur.text+=(cur.text?' ':'')+trailStep[1].trim();
+        // Start next step
+        if(cur.text.trim())steps.push(cur);
+        cur={title:trailStep[3].trim(),text:''};
+      } else {
+        cur.text+=(cur.text?' ':'')+t;
+      }
+    }
   }
   if(cur&&cur.text.trim())steps.push(cur);
   r.steps=steps.slice(0,8);r.tip=pdfParseSteps._tip;
