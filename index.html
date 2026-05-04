@@ -358,7 +358,8 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .day-bar-lbl{width:24px;font-weight:600;color:var(--muted);flex-shrink:0;}
 .day-bar-wrap{flex:1;background:var(--light);border-radius:4px;height:22px;position:relative;overflow:hidden;}
 .day-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
-.day-bar-obj{position:absolute;top:0;bottom:0;width:2px;background:#c0392b;opacity:.4;}
+.day-bar-obj{position:absolute;top:0;bottom:0;width:2px;background:#e0a830;opacity:.5;border-left:2px dashed #e0a830;}
+.day-bar-tdee{position:absolute;top:0;bottom:0;width:2px;background:#c0392b;opacity:.5;}
 .day-bar-val{width:70px;text-align:right;font-size:11px;color:var(--muted);}
 .day-bar-state{font-size:12px;width:18px;}
 .prot-grid{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
@@ -861,6 +862,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn" onclick="goToday()">Hoy</button>
+      <button class="btn btn-gr" onclick="sugerirSemanaCompleta()" title="Sugerir tupper para todos los días vacíos de la semana">✨ Sugerir semana</button>
       <button class="btn" onclick="printWeek(wo)" title="Imprimir semana visible">&#128438; Esta semana</button>
       <button class="btn" onclick="printAllWeeks()" title="Imprimir las 4 semanas">&#128438; Todo</button>
     </div>
@@ -1212,6 +1214,9 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
   <div class="lmodal" style="max-width:480px;max-height:90vh;overflow-y:auto;position:relative;">
     <div class="lmodal-t" id="lmodalTitle">Comida del mediodía</div>
     <div class="lmodal-sub" id="lmodalSub"></div>
+    <div style="margin-bottom:10px;">
+      <button class="btn btn-gr" style="width:100%;padding:9px;" onclick="sugerirTupper()">✨ Sugerir tupper</button>
+    </div>
     <div style="display:flex;gap:10px;margin-bottom:10px;">
       <div style="flex:1;">
         <div class="lmodal-person">
@@ -1715,10 +1720,10 @@ function makeLunchCell(wOff,day){
   return wrap;
 }
 
-let lunchEditState={wo:null,day:null};
+let lunchEditState={wo:null,day:null,kcal:null};
 
 function openLunchModal(wOff,day){
-  lunchEditState={wo:wOff,day};
+  lunchEditState={wo:wOff,day,kcal:null};
   const cd=getDayDate(wOff,day);
   const rec=recipes.find(r=>r.wo===wOff&&r.day===day);
   document.getElementById('lmodalTitle').textContent=`Comida — ${DAYS_F[day]} ${fmt(cd)}`;
@@ -1795,8 +1800,10 @@ function saveLunchModal(){
   const thomas_extra=getLingRows('thomas');
   const steps=getStepRows();
   const thomas_note=document.getElementById('lmodalThomasNote').value.trim();
-  if(nata||thomas||ings.length||thomas_extra.length||steps.length||thomas_note||prep_time)
+  if(nata||thomas||ings.length||thomas_extra.length||steps.length||thomas_note||prep_time){
     lunches[key]={nata,thomas,prep_time,ings,thomas_extra,steps,thomas_note};
+    if(lunchEditState.kcal)lunches[key].kcal=lunchEditState.kcal;
+  }
   else delete lunches[key];
   save();closeLunchModal();render();showToast('Comida guardada');
 }
@@ -1808,6 +1815,338 @@ function clearLunch(){
 }
 
 function closeLunchModal(){document.getElementById('lmodalOv').classList.remove('open');}
+
+const TUPPER_DB={
+  huhn:[
+    {name:'Lentejas con zanahoria, apio y comino',kcal:320,prep_time:'20 min',
+     ings:[{name:'Lentejas pardinas',qty:'80g'},{name:'Zanahoria',qty:'1 ud'},{name:'Apio',qty:'1 rama'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Comino',qty:'1 TL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Cocer lentejas',text:'Cuece las lentejas con la zanahoria y el apio troceados en agua con sal durante 18 min.'},{title:'Sofrito',text:'Sofríe la cebolla con aceite, comino, sal y pimienta. Mezcla con las lentejas y deja enfriar.'}]},
+    {name:'Ensalada de pasta fría con atún, olivas y tomate',kcal:360,prep_time:'15 min',
+     ings:[{name:'Pasta (fusilli o penne)',qty:'80g'},{name:'Atún al natural',qty:'1 lata'},{name:'Tomate cherry',qty:'100g'},{name:'Olivas negras',qty:'8 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer pasta',text:'Cuece la pasta en agua con sal según el paquete. Escurre y enfría bajo el grifo.'},{title:'Montar ensalada',text:'Mezcla la pasta con el atún escurrido, los cherry cortados por la mitad, las olivas, aceite, vinagre y sal.'}]},
+    {name:'Tortilla de espinacas con ensalada verde',kcal:290,prep_time:'10 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Tomate',qty:'1 ud'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Hacer tortilla',text:'Saltea las espinacas 1 min. Bate los huevos con sal, añade las espinacas y cuaja en sartén a fuego medio.'},{title:'Servir',text:'Acompaña con la lechuga y el tomate aliñados con aceite y sal.'}]},
+    {name:'Salmón ahumado con rúcula y tostada integral',kcal:280,prep_time:'5 min',
+     ings:[{name:'Salmón ahumado',qty:'80g'},{name:'Rúcula',qty:'1 puñado'},{name:'Pan integral',qty:'2 rebanadas'},{name:'Queso crema light',qty:'1 EL'},{name:'Limón',qty:'unas gotas'},{name:'Pimienta negra',qty:'al gusto'}],
+     steps:[{title:'Montar',text:'Unta las tostadas con queso crema. Coloca el salmón encima, la rúcula al lado y unas gotas de limón y pimienta.'}]},
+    {name:'Ensalada de alubias blancas con cebolla morada y pimiento',kcal:300,prep_time:'10 min',
+     ings:[{name:'Alubias blancas cocidas',qty:'200g'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Perejil fresco',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre de manzana',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Escurre y aclara las alubias. Pica el pimiento y la cebolla en brunoise. Mezcla todo con el perejil, aceite, vinagre y sal.'}]},
+    {name:'Frittata de verduras con queso feta',kcal:310,prep_time:'15 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Calabacín',qty:'½ ud'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Queso feta',qty:'40g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Saltear verduras',text:'Corta el calabacín y el pimiento en dados pequeños. Saltea 3 min con aceite y sal.'},{title:'Cuajar',text:'Bate los huevos, añade las verduras y el feta desmenuzado. Vierte en sartén y cuaja 5-7 min a fuego bajo con tapa.'}]},
+    {name:'Bowl de arroz basmati con edamame y salsa de soja',kcal:380,prep_time:'20 min',
+     ings:[{name:'Arroz basmati',qty:'70g'},{name:'Edamame (congelado)',qty:'100g'},{name:'Zanahoria',qty:'1 ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sésamo',qty:'1 TL'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz según indicaciones. Hierve el edamame 3 min.'},{title:'Montar bowl',text:'Coloca el arroz en el tupper, añade el edamame y la zanahoria rallada. Aliña con soja y aceite de sésamo. Espolvorea sésamo.'}]},
+    {name:'Ensalada de garbanzos con tomate cherry, pepino y vinagreta de limón',kcal:310,prep_time:'10 min',
+     ings:[{name:'Garbanzos cocidos',qty:'200g'},{name:'Tomate cherry',qty:'80g'},{name:'Pepino',qty:'½ ud'},{name:'Zumo de limón',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Menta fresca',qty:'unas hojas'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Escurre los garbanzos. Corta los cherry por la mitad y el pepino en dados. Mezcla con el zumo de limón, aceite, menta y sal.'}]},
+    {name:'Huevo duro con ensalada de judías verdes y tomate',kcal:260,prep_time:'15 min',
+     ings:[{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'150g'},{name:'Tomate',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min en agua con sal. Enfría todo.'},{title:'Montar',text:'Coloca las judías y el tomate en dados en el tupper. Añade los huevos pelados y cortados. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Pasta fría con pesto, cherry y mozzarella',kcal:420,prep_time:'15 min',
+     ings:[{name:'Pasta (fusilli)',qty:'80g'},{name:'Pesto',qty:'1 EL'},{name:'Tomate cherry',qty:'80g'},{name:'Mozzarella fresca',qty:'50g'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer pasta',text:'Cuece la pasta según el paquete. Escurre y enfría bajo el grifo.'},{title:'Montar',text:'Mezcla la pasta con el pesto, los cherry cortados y la mozzarella en dados.'}]},
+  ],
+  schwein:[
+    {name:'Pechuga de pollo a la plancha con pimientos asados',kcal:270,prep_time:'15 min',
+     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Asar pimientos',text:'Corta el pimiento en tiras y ásalo en sartén con aceite a fuego medio-alto 8 min.'},{title:'Hacer pollo',text:'Salpimienta la pechuga con ajo en polvo y cocina a la plancha 3-4 min por lado.'}]},
+    {name:'Ensalada de atún con huevo cocido y judías verdes',kcal:260,prep_time:'15 min',
+     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'150g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min. Enfría.'},{title:'Montar',text:'Combina el atún escurrido, las judías, los huevos en cuartos. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Bowl de arroz con pollo al curry suave',kcal:400,prep_time:'20 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Curry en polvo',qty:'1 TL'},{name:'Yogur natural',qty:'2 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz según indicaciones.'},{title:'Pollo al curry',text:'Corta el pollo en dados, salpimienta con curry y sofríe 6 min. Mezcla con el yogur fuera del fuego. Sirve sobre el arroz.'}]},
+    {name:'Ensalada de garbanzos con espinacas y limón',kcal:290,prep_time:'10 min',
+     ings:[{name:'Garbanzos cocidos',qty:'200g'},{name:'Espinacas frescas',qty:'60g'},{name:'Zumo de limón',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Escurre los garbanzos. Mezcla con las espinacas, el zumo de limón, aceite y sal. Deja reposar 5 min.'}]},
+    {name:'Wrap de pollo con lechuga, tomate y queso fresco',kcal:350,prep_time:'10 min',
+     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Lechuga',qty:'2 hojas'},{name:'Tomate',qty:'½ ud'},{name:'Queso fresco',qty:'30g'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Rellenar',text:'Desmenuza el pollo. Coloca sobre la tortilla la lechuga, el tomate en rodajas, el pollo y el queso. Enrolla y envuelve en papel de aluminio.'}]},
+    {name:'Salmón al horno con espárragos y limón',kcal:300,prep_time:'20 min',
+     ings:[{name:'Lomo de salmón',qty:'150g'},{name:'Espárragos verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Hornear',text:'Coloca el salmón y los espárragos en bandeja. Aliña con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'}]},
+    {name:'Ensalada de pasta con pollo, tomate y albahaca',kcal:380,prep_time:'20 min',
+     ings:[{name:'Pasta',qty:'80g'},{name:'Pechuga de pollo',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer',text:'Cuece la pasta. Cocina el pollo a la plancha y córtalo en dados.'},{title:'Montar',text:'Mezcla pasta fría con el pollo, los cherry, albahaca y aceite.'}]},
+    {name:'Tortilla de patata pequeña con ensalada',kcal:420,prep_time:'20 min',
+     ings:[{name:'Patatas',qty:'200g'},{name:'Huevos',qty:'2 ud'},{name:'Cebolla',qty:'¼ ud'},{name:'Aceite de oliva',qty:'2 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Confitar patata',text:'Corta la patata y cebolla en láminas finas. Sofríe en aceite a fuego bajo 12 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade la patata, mezcla y cuaja en sartén 5 min por lado. Sirve con ensalada.'}]},
+    {name:'Bowl de arroz con salmón y edamame',kcal:390,prep_time:'20 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Lomo de salmón',qty:'130g'},{name:'Edamame congelado',qty:'80g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer',text:'Cuece el arroz y el edamame. Haz el salmón a la plancha 3 min por lado y desmenuza.'},{title:'Montar',text:'Coloca el arroz, añade el salmón y el edamame. Aliña con soja y aceite de sésamo.'}]},
+    {name:'Pollo al limón con calabacín a la plancha y arroz',kcal:380,prep_time:'20 min',
+     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Calabacín',qty:'1 ud'},{name:'Arroz',qty:'60g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Corta el calabacín en rodajas y cocina en plancha 3 min. Cocina el pollo con zumo de limón, aceite, sal y pimienta 4 min por lado.'}]},
+  ],
+  rind:[
+    {name:'Ensalada niçoise con atún, huevo, judías verdes y olivas',kcal:290,prep_time:'15 min',
+     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'100g'},{name:'Olivas negras',qty:'8 ud'},{name:'Tomate cherry',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'}],
+     steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min. Enfría.'},{title:'Montar',text:'Coloca todos los ingredientes en el tupper. Aliña con aceite y vinagre.'}]},
+    {name:'Wrap de pollo con aguacate y lechuga',kcal:360,prep_time:'10 min',
+     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Aguacate',qty:'½ ud'},{name:'Lechuga',qty:'2 hojas'},{name:'Zumo de limón',qty:'unas gotas'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pollo desmenuzado y la lechuga. Enrolla.'}]},
+    {name:'Lentejas rojas con coco y jengibre',kcal:340,prep_time:'20 min',
+     ings:[{name:'Lentejas rojas',qty:'80g'},{name:'Leche de coco',qty:'100ml'},{name:'Jengibre fresco',qty:'1 TL rallado'},{name:'Cúrcuma',qty:'½ TL'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Sofrito',text:'Sofríe la cebolla con aceite, jengibre y cúrcuma 3 min.'},{title:'Cocer',text:'Añade las lentejas y la leche de coco más 150ml de agua. Cuece 15 min hasta que estén tiernas. Salpimienta.'}]},
+    {name:'Tortilla de champiñones con ensalada',kcal:280,prep_time:'12 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Champiñones',qty:'150g'},{name:'Ajo',qty:'1 diente'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Saltear',text:'Lamina los champiñones y saltea con ajo y aceite 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade los champiñones y cuaja en sartén 4 min. Sirve con ensalada verde.'}]},
+    {name:'Pasta fría con pesto, cherry y mozzarella',kcal:420,prep_time:'15 min',
+     ings:[{name:'Pasta (fusilli)',qty:'80g'},{name:'Pesto',qty:'1 EL'},{name:'Tomate cherry',qty:'80g'},{name:'Mozzarella fresca',qty:'50g'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer pasta',text:'Cuece y enfría la pasta.'},{title:'Montar',text:'Mezcla con pesto, cherry y mozzarella en dados.'}]},
+    {name:'Frittata de puerro y queso con tostada',kcal:330,prep_time:'15 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Puerro',qty:'½ ud'},{name:'Queso rallado',qty:'30g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pan integral',qty:'1 rebanada'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Pochar puerro',text:'Corta el puerro en rodajas finas y sofríe con aceite 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal y queso, añade el puerro y cuaja a fuego bajo 6 min con tapa. Sirve con tostada.'}]},
+    {name:'Bowl de arroz con huevo poché y espinacas',kcal:360,prep_time:'15 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Huevos',qty:'2 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz. Saltea las espinacas 1 min.'},{title:'Huevo poché',text:'En agua hirviendo con vinagre, añade los huevos y cuece 3 min. Sirve sobre el arroz con espinacas, soja y sésamo.'}]},
+    {name:'Pechuga de pollo con pimientos asados y arroz',kcal:370,prep_time:'20 min',
+     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Arroz',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pimentón',qty:'½ TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Asa el pimiento en tiras 8 min. Cocina el pollo con pimentón y sal 4 min por lado. Sirve con el arroz.'}]},
+    {name:'Ensalada de atún con aguacate, tomate y maíz',kcal:300,prep_time:'10 min',
+     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'1 ud'},{name:'Maíz cocido',qty:'3 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Corta el aguacate y el tomate en dados. Mezcla con el atún escurrido, el maíz, aceite, sal y unas gotas de limón.'}]},
+    {name:'Tortilla de espinacas y queso feta',kcal:280,prep_time:'12 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Queso feta',qty:'40g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Saltear espinacas',text:'Saltea las espinacas 1 min con aceite.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las espinacas y el feta desmenuzado. Cuaja en sartén 5 min.'}]},
+  ],
+  fisch:[
+    {name:'Pechuga de pollo a la plancha con pimientos asados',kcal:270,prep_time:'15 min',
+     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Asar pimientos',text:'Asa el pimiento en tiras con aceite 8 min.'},{title:'Hacer pollo',text:'Salpimienta el pollo con ajo y cocina 4 min por lado.'}]},
+    {name:'Bowl de arroz con pollo al limón y espárragos',kcal:370,prep_time:'20 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Espárragos verdes',qty:'100g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer',text:'Cuece el arroz. Haz los espárragos a la plancha 4 min.'},{title:'Pollo',text:'Cocina el pollo con zumo de limón y aceite 4 min por lado. Corta y sirve sobre el arroz.'}]},
+    {name:'Ensalada de garbanzos con pollo, tomate y albahaca',kcal:320,prep_time:'15 min',
+     ings:[{name:'Garbanzos cocidos',qty:'150g'},{name:'Pechuga de pollo cocida',qty:'80g'},{name:'Tomate cherry',qty:'80g'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Desmenuza el pollo. Corta los cherry por la mitad. Mezcla con los garbanzos, albahaca, aceite y sal.'}]},
+    {name:'Wrap de pavo con aguacate y mostaza',kcal:330,prep_time:'10 min',
+     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Mostaza',qty:'1 TL'},{name:'Lechuga',qty:'2 hojas'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Rellenar',text:'Unta la tortilla con mostaza y el aguacate aplastado. Añade el pavo y la lechuga. Enrolla.'}]},
+    {name:'Lentejas con verduras y pimentón',kcal:300,prep_time:'20 min',
+     ings:[{name:'Lentejas pardinas',qty:'80g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Pimentón dulce',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Sofrito',text:'Sofríe la cebolla y zanahoria troceadas con aceite y pimentón 3 min.'},{title:'Cocer',text:'Añade las lentejas y agua suficiente. Cuece 18 min. Ajusta sal.'}]},
+    {name:'Tortilla de patata con ensalada verde',kcal:420,prep_time:'20 min',
+     ings:[{name:'Patatas',qty:'200g'},{name:'Huevos',qty:'2 ud'},{name:'Cebolla',qty:'¼ ud'},{name:'Aceite de oliva',qty:'2 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Confitar',text:'Fríe la patata y cebolla a fuego bajo 12 min.'},{title:'Cuajar',text:'Bate huevos con sal, añade la patata, cuaja 5 min por lado. Sirve con lechuga aliñada.'}]},
+    {name:'Pasta con pollo, tomate fresco y albahaca',kcal:400,prep_time:'20 min',
+     ings:[{name:'Pasta',qty:'80g'},{name:'Pechuga de pollo',qty:'100g'},{name:'Tomate maduro',qty:'1 ud'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer pasta',text:'Cuece la pasta.'},{title:'Montar',text:'Cocina el pollo en dados. Mezcla todo en caliente con el tomate en cubos, albahaca y aceite.'}]},
+    {name:'Bowl de arroz con pollo, calabacín y salsa de soja',kcal:380,prep_time:'20 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Calabacín',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Saltear',text:'Saltea el calabacín en dados y el pollo en tiras con aceite 6 min. Añade la soja y sirve sobre el arroz.'}]},
+    {name:'Ensalada de alubias rojas con maíz y pimiento',kcal:290,prep_time:'10 min',
+     ings:[{name:'Alubias rojas cocidas',qty:'200g'},{name:'Maíz cocido',qty:'3 EL'},{name:'Pimiento verde',qty:'½ ud'},{name:'Cebolleta',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Escurre las alubias. Pica el pimiento y la cebolleta. Mezcla todo con el maíz, aceite, vinagre y sal.'}]},
+    {name:'Ensalada de pollo con mango, lechuga y vinagreta',kcal:310,prep_time:'15 min',
+     ings:[{name:'Pechuga de pollo cocida',qty:'120g'},{name:'Mango',qty:'½ ud'},{name:'Lechuga variada',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre de manzana',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Corta el pollo en tiras y el mango en dados. Mezcla con la lechuga y aliña con aceite, vinagre y sal.'}]},
+  ],
+  veggi:[
+    {name:'Pechuga de pollo con ensalada de rúcula y parmesano',kcal:280,prep_time:'15 min',
+     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Rúcula',qty:'1 puñado'},{name:'Parmesano',qty:'20g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Limón',qty:'unas gotas'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Hacer pollo',text:'Cocina el pollo a la plancha con sal y pimienta 4 min por lado.'},{title:'Montar',text:'Sirve sobre la rúcula. Añade el parmesano rallado y aliña con aceite y limón.'}]},
+    {name:'Ensalada de atún con aguacate y tomate',kcal:290,prep_time:'10 min',
+     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Corta el aguacate y el tomate en dados. Mezcla con el atún escurrido, aceite, sal y zumo de limón.'}]},
+    {name:'Bowl de arroz con salmón y edamame',kcal:390,prep_time:'20 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Lomo de salmón',qty:'130g'},{name:'Edamame congelado',qty:'80g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'}],
+     steps:[{title:'Cocer',text:'Cuece el arroz y el edamame.'},{title:'Salmón',text:'Haz el salmón a la plancha 3 min por lado. Desmenuza y sirve sobre el arroz con edamame, soja y sésamo.'}]},
+    {name:'Wrap de pollo con lechuga y queso fresco',kcal:340,prep_time:'10 min',
+     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Lechuga',qty:'2 hojas'},{name:'Queso fresco',qty:'40g'},{name:'Tomate',qty:'½ ud'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Rellenar',text:'Coloca sobre la tortilla la lechuga, el pollo desmenuzado, el queso en dados y el tomate. Enrolla.'}]},
+    {name:'Pasta fría con atún, olivas y tomate',kcal:370,prep_time:'15 min',
+     ings:[{name:'Pasta',qty:'80g'},{name:'Atún al natural',qty:'1 lata'},{name:'Olivas negras',qty:'8 ud'},{name:'Tomate cherry',qty:'80g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer y enfriar pasta',text:'Cuece la pasta según el paquete. Enfría bajo el grifo.'},{title:'Montar',text:'Mezcla con el atún, las olivas y los cherry. Aliña con aceite y sal.'}]},
+    {name:'Tortilla de jamón y queso con ensalada',kcal:310,prep_time:'10 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Jamón cocido',qty:'60g'},{name:'Queso rallado',qty:'30g'},{name:'Aceite de oliva',qty:'1 TL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cuajar',text:'Bate los huevos con sal. Añade el jamón en tiras y el queso. Cuaja en sartén 4 min a fuego medio.'},{title:'Servir',text:'Acompaña con lechuga aliñada con aceite.'}]},
+    {name:'Salmón ahumado con pepino y queso crema',kcal:270,prep_time:'5 min',
+     ings:[{name:'Salmón ahumado',qty:'80g'},{name:'Pepino',qty:'½ ud'},{name:'Queso crema light',qty:'2 EL'},{name:'Pan integral',qty:'2 rebanadas'},{name:'Eneldo',qty:'al gusto'},{name:'Pimienta',qty:'al gusto'}],
+     steps:[{title:'Montar',text:'Unta el pan con queso crema. Coloca el salmón encima. Sirve con el pepino en rodajas y espolvorea eneldo y pimienta.'}]},
+    {name:'Bowl de arroz con atún, maíz y aguacate',kcal:380,prep_time:'15 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Atún al natural',qty:'1 lata'},{name:'Maíz cocido',qty:'3 EL'},{name:'Aguacate',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz y deja templar.'},{title:'Montar',text:'Coloca el arroz en el tupper. Añade el atún, el maíz y el aguacate en dados. Aliña con soja y limón.'}]},
+    {name:'Pechuga de pavo con pimientos asados y arroz',kcal:360,prep_time:'20 min',
+     ings:[{name:'Filete de pavo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Arroz',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimentón',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Asa el pimiento en tiras. Cocina el pavo con pimentón y sal 4 min por lado. Sirve con el arroz.'}]},
+    {name:'Ensalada de pasta con pollo, tomate y piñones',kcal:400,prep_time:'20 min',
+     ings:[{name:'Pasta',qty:'80g'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Piñones',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer y enfriar pasta',text:'Cuece la pasta y enfría.'},{title:'Montar',text:'Mezcla con el pollo en dados, los cherry, los piñones tostados y aceite.'}]},
+  ],
+  wurst:[
+    {name:'Pechuga de pollo con judías verdes y salsa de yogur',kcal:270,prep_time:'15 min',
+     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Judías verdes',qty:'150g'},{name:'Yogur natural',qty:'3 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer judías',text:'Cuece las judías en agua con sal 5 min. Escurre.'},{title:'Pollo y salsa',text:'Cocina el pollo a la plancha 4 min por lado. Mezcla el yogur con ajo y sal. Sirve con las judías y la salsa.'}]},
+    {name:'Ensalada de garbanzos con espinacas y huevo duro',kcal:300,prep_time:'15 min',
+     ings:[{name:'Garbanzos cocidos',qty:'200g'},{name:'Espinacas frescas',qty:'60g'},{name:'Huevos',qty:'2 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer huevos',text:'Cuece los huevos 10 min. Enfría y pela.'},{title:'Montar',text:'Mezcla los garbanzos con las espinacas. Añade los huevos en cuartos. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Salmón al horno con judías verdes y limón',kcal:300,prep_time:'20 min',
+     ings:[{name:'Lomo de salmón',qty:'150g'},{name:'Judías verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Hornear',text:'Coloca el salmón en bandeja con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'},{title:'Judías',text:'Cuece las judías 5 min en agua con sal. Sirve junto al salmón.'}]},
+    {name:'Bowl de arroz con pollo, calabacín y salsa de soja',kcal:380,prep_time:'20 min',
+     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Calabacín',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Saltear',text:'Saltea el calabacín y el pollo en tiras con aceite 6 min. Añade la soja. Sirve sobre el arroz.'}]},
+    {name:'Frittata de verduras con ensalada de rúcula',kcal:290,prep_time:'15 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Calabacín',qty:'½ ud'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Rúcula',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Saltear verduras',text:'Saltea el calabacín y pimiento en dados 3 min con aceite y sal.'},{title:'Cuajar y servir',text:'Bate los huevos con sal, añade las verduras y cuaja a fuego bajo 6 min. Sirve con rúcula.'}]},
+    {name:'Wrap de pavo con aguacate y tomate',kcal:320,prep_time:'10 min',
+     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'½ ud'},{name:'Sal y limón',qty:'al gusto'}],
+     steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pavo y el tomate en rodajas. Enrolla.'}]},
+    {name:'Lentejas con verduras y comino',kcal:310,prep_time:'20 min',
+     ings:[{name:'Lentejas pardinas',qty:'80g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Comino',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Sofrito',text:'Sofríe la cebolla y zanahoria con aceite y comino 3 min.'},{title:'Cocer',text:'Añade las lentejas y agua. Cuece 18 min. Ajusta sal.'}]},
+    {name:'Pasta con salmón ahumado y eneldo',kcal:380,prep_time:'15 min',
+     ings:[{name:'Pasta',qty:'80g'},{name:'Salmón ahumado',qty:'80g'},{name:'Queso crema light',qty:'2 EL'},{name:'Eneldo',qty:'al gusto'},{name:'Sal y pimienta',qty:'al gusto'}],
+     steps:[{title:'Cocer pasta',text:'Cuece la pasta y reserva 2 EL del agua de cocción.'},{title:'Montar',text:'Mezcla la pasta caliente con el queso crema, el agua reservada y el salmón en trozos. Añade eneldo y pimienta.'}]},
+    {name:'Ensalada de alubias blancas con atún y cebolla',kcal:290,prep_time:'10 min',
+     ings:[{name:'Alubias blancas cocidas',qty:'200g'},{name:'Atún al natural',qty:'1 lata'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Perejil fresco',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Preparar',text:'Escurre las alubias y el atún. Pica la cebolla fina. Mezcla todo con el perejil, aceite, vinagre y sal.'}]},
+    {name:'Tortilla de champiñones y pimiento con ensalada',kcal:280,prep_time:'15 min',
+     ings:[{name:'Huevos',qty:'3 ud'},{name:'Champiñones',qty:'100g'},{name:'Pimiento verde',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
+     steps:[{title:'Saltear',text:'Saltea los champiñones laminados y el pimiento en dados con aceite y sal 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las verduras y cuaja 5 min. Sirve con lechuga.'}]},
+  ],
+};
+
+// Ingredientes a evitar por persona
+// Ingredientes a evitar siempre por persona
+const TUPPER_AVOID={
+  nata:['quinoa','alcaparras','crema','hummus','brócoli'],
+  thomas:['quinoa','alcaparras','crema','hummus'],
+};
+
+// Palabras clave de proteína que hay que excluir según la cena
+const PROT_KEYWORDS={
+  huhn:['pollo','pechuga','pavo','pollo'],
+  schwein:['cerdo','bacon','panceta'],
+  rind:['ternera','buey','carne roja'],
+  fisch:['salmón','atún','pescado','merluza','bacalao','sardina'],
+  wurst:['jamón','embutido','chorizo','salchichón','fiambre'],
+  veggi:[], // vegetariano → sin restricción de proteína
+};
+
+// Pool completo de todos los tuppers (sin duplicados por nombre)
+function getAllTuppers(){
+  const seen=new Set();
+  const all=[];
+  Object.values(TUPPER_DB).forEach(lista=>lista.forEach(t=>{
+    if(!seen.has(t.name)){seen.add(t.name);all.push(t);}
+  }));
+  return all;
+}
+
+// Tuppers usados en los últimos N días hacia atrás desde wo/day
+function getTuppersUsadosUltimoDias(wo,day,dias=10){
+  const usados=new Set();
+  let contador=0;
+  let d=day-1,w=wo;
+  while(contador<dias){
+    if(d<0){d=6;w--;}
+    const l=lunches[lunchKey(w,d)];
+    if(l?.nata)usados.add(l.nata.toLowerCase().trim());
+    d--;contador++;
+  }
+  return usados;
+}
+
+function getPoolTuppers(wo,day,excluirKey=null){
+  const rec=recipes.find(r=>r.wo===wo&&r.day===day);
+  const tipo=rec?rec.type:'veggi';
+  const cenaKcal=rec?getKcal(rec.name)||null:null;
+  const tdee=calcTDEE(userProfile);
+  // Ideal: llegar al objetivo de déficit. TDEE como techo.
+  const kcalIdeal=cenaKcal?Math.max(50,OBJETIVO-FIJO-cenaKcal):350;
+  const kcalMin=Math.max(50,kcalIdeal-80);
+  const kcalMax=Math.min(tdee-FIJO-(cenaKcal||0),kcalIdeal+80);
+
+  // Pool: todos los tuppers menos los que contienen la proteína de la cena
+  const protExcluir=PROT_KEYWORDS[tipo]||[];
+  let opciones=getAllTuppers().filter(t=>{
+    const n=t.name.toLowerCase();
+    // Excluir proteína de la cena
+    if(protExcluir.some(p=>n.includes(p)))return false;
+    // Excluir ingredientes no deseados de Nata
+    if(TUPPER_AVOID.nata.some(ev=>n.includes(ev)))return false;
+    return true;
+  });
+
+  // Filtrar por kcal
+  const porKcal=opciones.filter(t=>t.kcal>=kcalMin&&t.kcal<=kcalMax);
+  if(porKcal.length)opciones=porKcal;
+
+  // Excluir usados en los 10 días anteriores
+  const usados10=getTuppersUsadosUltimoDias(wo,day,10);
+  const sinHistorico=opciones.filter(t=>!usados10.has(t.name.toLowerCase().trim()));
+  if(sinHistorico.length)opciones=sinHistorico;
+
+  // Excluir usados esta semana (además del día actual)
+  const semanaKeys=[0,1,2,3,4,5,6].map(d=>lunchKey(wo,d))
+    .filter(k=>k!==lunchKey(wo,day)&&k!==excluirKey);
+  const usadosSemana=new Set(semanaKeys.map(k=>lunches[k]?.nata||'').filter(Boolean).map(s=>s.toLowerCase().trim()));
+  const sinSemana=opciones.filter(t=>!usadosSemana.has(t.name.toLowerCase().trim()));
+  if(sinSemana.length)opciones=sinSemana;
+
+  return opciones;
+}
+
+function sugerirTupper(){
+  const {wo,day}=lunchEditState;
+  const opciones=getPoolTuppers(wo,day);
+  if(!opciones.length){showToast('No hay sugerencias disponibles para hoy');return;}
+
+  const elegido=opciones[Math.floor(Math.random()*opciones.length)];
+  const thomasOk=!TUPPER_AVOID.thomas.some(ev=>elegido.name.toLowerCase().includes(ev));
+
+  document.getElementById('lmodalNata').value=elegido.name;
+  document.getElementById('lmodalThomas').value=thomasOk?'Igual que Nata':'';
+  document.getElementById('lmodalPrepTime').value=elegido.prep_time||'';
+  renderLingRows('shared', elegido.ings||[]);
+  renderStepRows(elegido.steps||[]);
+  lunchEditState.kcal=elegido.kcal||null;
+
+  const kcalInfo=elegido.kcal?` · ~${elegido.kcal} kcal`:'';
+  showToast(`✨ Sugerido${kcalInfo} — puedes editarlo`);
+}
+
+function sugerirSemanaCompleta(){
+  const dias=[0,1,2,3,4,5,6];
+  let rellenados=0;
+  // Lista de lo que se va asignando esta sesión para no repetir entre días
+  const asignadosEstaSesion=new Set();
+
+  dias.forEach(day=>{
+    if(lunches[lunchKey(wo,day)]?.nata)return; // ya tiene tupper
+    const rec=recipes.find(r=>r.wo===wo&&r.day===day);
+    if(!rec)return; // sin cena ese día, no sugerimos tupper
+
+    let opciones=getPoolTuppers(wo,day);
+    // Excluir también lo asignado en esta misma sesión
+    const sinSesion=opciones.filter(t=>!asignadosEstaSesion.has(t.name.toLowerCase().trim()));
+    if(sinSesion.length)opciones=sinSesion;
+    if(!opciones.length)return;
+
+    const elegido=opciones[Math.floor(Math.random()*opciones.length)];
+    const thomasOk=!TUPPER_AVOID.thomas.some(ev=>elegido.name.toLowerCase().includes(ev));
+
+    lunches[lunchKey(wo,day)]={
+      nata:elegido.name,
+      thomas:thomasOk?'Igual que Nata':'',
+      prep_time:elegido.prep_time||'',
+      ings:elegido.ings||[],
+      steps:elegido.steps||[],
+      kcal:elegido.kcal||null,
+      thomas_extra:[],thomas_note:'',
+    };
+    asignadosEstaSesion.add(elegido.name.toLowerCase().trim());
+    rellenados++;
+  });
+
+  if(rellenados>0){save();render();showToast(`✨ ${rellenados} tupper${rellenados>1?'s':''} sugeridos`);}
+  else showToast('Todos los días ya tienen tupper o no hay cena');
+}
 
 // TUPPER RECIPE VIEW
 function openTupper(wOff,day){
@@ -4226,20 +4565,21 @@ function getKcal(name){
 // Tupper kcal estimates by type of dish
 function estimateLunchKcal(l){
   if(!l)return null;
+  if(l.kcal)return l.kcal; // usar kcal guardado (de la biblioteca) si existe
   const n=(l.nata||'').toLowerCase();
-  if(n.includes('pasta')&&n.includes('mozzarella'))return 500;
-  if(n.includes('pasta'))return 480;
-  if(n.includes('arroz'))return 480;
-  if(n.includes('wrap')||n.includes('tortilla integral'))return 450;
-  if(n.includes('tortilla')&&n.includes('huevo'))return 350;
-  if(n.includes('garbanzos'))return 360;
-  if(n.includes('lentejas'))return 350;
-  if(n.includes('salmón ahumado'))return 370;
-  if(n.includes('ensalada')&&n.includes('atún'))return 340;
-  if(n.includes('atún'))return 350;
-  if(n.includes('pechuga')||n.includes('pollo'))return 380;
+  if(n.includes('pasta')&&n.includes('mozzarella'))return 420;
+  if(n.includes('pasta'))return 390;
+  if(n.includes('arroz'))return 380;
+  if(n.includes('wrap')||n.includes('tortilla integral'))return 350;
+  if(n.includes('tortilla')&&n.includes('huevo'))return 300;
+  if(n.includes('garbanzos'))return 310;
+  if(n.includes('lentejas'))return 320;
+  if(n.includes('salmón ahumado'))return 280;
+  if(n.includes('ensalada')&&n.includes('atún'))return 290;
+  if(n.includes('atún'))return 300;
+  if(n.includes('pechuga')||n.includes('pollo'))return 300;
   if(n.includes('pavo'))return 330;
-  return 380; // generic
+  return 340; // generic
 }
 
 let userProfile={nombre:'Nata',edad:38,peso:80,altura:168,actividad:'sedentaria',deficit:400,kcalFijas:595};
@@ -4247,6 +4587,87 @@ let FIJO=595,OBJETIVO=1550;
 function calcTDEE(p){const bmr=10*p.peso+6.25*p.altura-5*p.edad-161;const f={sedentaria:1.2,ligera:1.375,moderada:1.55}[p.actividad]||1.2;return Math.round(bmr*f);}
 function updateProfileConstants(){FIJO=userProfile.kcalFijas||595;OBJETIVO=calcTDEE(userProfile)-(userProfile.deficit||400);}
 const DAYS_F_SHORT=['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+
+function getMotivationalMessage({exceso,gPerSemana,perdiendo,dayData,known,anWo,kw,tdee}){
+  if(exceso===null||known.length<3)return null; // no hay suficientes datos
+  if(!perdiendo&&exceso>150)return null; // semana mala → silencio total
+
+  // Calcular racha de semanas por debajo del objetivo
+  let racha=0;
+  for(let w=anWo;w>=anWo-8;w--){
+    const wRecs=recipes.filter(r=>r.wo===w);
+    const wDays=[];
+    for(let d=0;d<7;d++){
+      const r=wRecs.find(x=>x.day===d);const l=lunches[lunchKey(w,d)]||null;
+      const ck=r?getKcal(r.name)||null:null;const tk=estimateLunchKcal(l);
+      const tot=(ck||tk)?FIJO+(tk||0)+(ck||0):null;
+      if(tot)wDays.push(tot);
+    }
+    if(!wDays.length)break;
+    const wMedia=wDays.reduce((s,v)=>s+v,0)/wDays.length;
+    if(wMedia-OBJETIVO<=0)racha++;
+    else break;
+  }
+
+  // Peso perdido total (desde weightLog)
+  const allWeights=Object.values(weightLog).map(l=>l.weight).filter(Boolean).sort((a,b)=>a-b);
+  const pesoInicio=userProfile.peso;
+  const pesoActual=allWeights.length?allWeights[allWeights.length-1]:null;
+  const totalPerdido=pesoActual?Math.round((pesoInicio-pesoActual)*10)/10:null;
+
+  // Día mejor de la semana (menos kcal)
+  const mejorDia=dayData.filter(x=>x.total&&x.total<OBJETIVO).sort((a,b)=>a.total-b.total)[0];
+  const DAYS_ESP=['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+
+  // Ciclo esta semana
+  const wkKey=`${kw}_${getMon(anWo).getFullYear()}`;
+  const esCiclo=cycleWeeks.has(wkKey);
+
+  // Pool de mensajes según contexto
+  const msgs=[];
+
+  if(esCiclo&&perdiendo){
+    msgs.push(`💧 Semana con ciclo y aun así por debajo del objetivo. Eso es disciplina de verdad.`);
+    msgs.push(`💧 Con ciclo y sin excusas — ${gPerSemana}g menos esta semana. El cuerpo manda pero tú mandas más.`);
+  }
+
+  if(racha>=3){
+    msgs.push(`🔥 ${racha} semanas seguidas por debajo del objetivo. La constancia es lo que funciona.`);
+    msgs.push(`✨ Llevas ${racha} semanas en racha — eso ya no es suerte, es hábito.`);
+  }
+
+  if(totalPerdido&&totalPerdido>0){
+    msgs.push(`📉 ${totalPerdido} kg menos desde que empezaste. Cada semana suma.`);
+    if(totalPerdido>=1)msgs.push(`🎉 Ya van ${totalPerdido} kg — lo que pesa medio kilo de mantequilla, pero en grasa real.`);
+    if(totalPerdido>=2)msgs.push(`💪 ${totalPerdido} kg perdidos. Sigue así y en unos meses no te lo vas a creer.`);
+  }
+
+  if(perdiendo&&gPerSemana>100){
+    msgs.push(`📊 A este ritmo, ~${gPerSemana}g menos esta semana. Pequeño pero real.`);
+    msgs.push(`⚡ ${gPerSemana}g esta semana. No se nota en el espejo todavía, pero la báscula no miente.`);
+  }
+
+  if(mejorDia){
+    const recNombre=mejorDia.rec?mejorDia.rec.name.split(' ').slice(0,3).join(' '):'';
+    msgs.push(`✅ El ${DAYS_ESP[mejorDia.day]} fue perfecto${recNombre?' ('+recNombre+')':''}. Así es como se hace.`);
+  }
+
+  if(exceso<=-200){
+    msgs.push(`🟢 Muy por debajo del objetivo esta semana. Tu cuerpo lo está notando aunque aún no lo veas.`);
+    msgs.push(`💚 Semana excelente — ${Math.abs(Math.round(exceso))} kcal de sobra al día. Sin pasarte, sin quedarte corta.`);
+  }
+
+  // Fallback genérico positivo
+  msgs.push(`✨ Semana por debajo del objetivo. Exactamente lo que toca.`);
+  msgs.push(`🟢 Va bien. Sigue así.`);
+
+  // Elegir uno al azar del pool relevante
+  const msg=msgs[Math.floor(Math.random()*Math.min(msgs.length,4))];
+
+  return `<div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:12px;padding:14px 18px;margin-bottom:14px;border-left:4px solid #2e6b30;">
+    <div style="font-size:14px;font-weight:600;color:#1a4020;line-height:1.5;">${msg}</div>
+  </div>`;
+}
 
 function renderAnalisis(){
   const mon=getMon(anWo);const sun=getDayDate(anWo,6);
@@ -4286,6 +4707,10 @@ function renderAnalisis(){
 
   let html='';
 
+  // ── MENSAJE MOTIVACIONAL (solo si la semana va bien) ──
+  const msgHtml=getMotivationalMessage({exceso,gPerSemana,perdiendo,dayData,known,anWo,kw,tdee});
+  if(msgHtml)html+=msgHtml;
+
   // ── BLOQUE 1: ¿Voy bien esta semana? ──
   const semaforo=exceso===null?null:exceso<=-50?'🟢 Vas bien':exceso<=150?'🟡 Cerca del objetivo':'🔴 Por encima del objetivo';
   const semaforoColor=exceso===null?'var(--muted)':exceso<=-50?'#2e6b30':exceso<=150?'#e0a830':'#e05050';
@@ -4312,9 +4737,10 @@ function renderAnalisis(){
       const lbl=DAYS_F_SHORT[day];
       const pct=total?Math.min((total/maxKcal)*100,100):0;
       const objPct=(OBJETIVO/maxKcal)*100;
+      const tdeePct=(tdee/maxKcal)*100;
       const dayExceso=total?total-OBJETIVO:null;
       const over=dayExceso!==null&&dayExceso>0;
-      const color=!total?'#e0ddd8':cheatKcal?'#e05050':dayExceso<0?'#6db870':dayExceso<=150?'#e0a830':'#e05050';
+      const color=!total?'#e0ddd8':cheatKcal?'#e05050':total<OBJETIVO?'#6db870':total<=tdee?'#e0a830':'#e05050';
       const cenaStr=rec?(cenaKcal?`${rec.name.split(' ').slice(0,2).join(' ')} (${cenaKcal})`:'cena sin kcal'):'sin cena';
       const tupStr=l?(tupperKcal?`tupper ~${tupperKcal}`:'tupper —'):'sin tupper';
       html+=`<div class="day-bar-row" style="${over?'background:#fff8f8;border-radius:6px;padding:2px 4px;margin:0 -4px;':''}">
@@ -4324,12 +4750,13 @@ function renderAnalisis(){
           <div class="day-bar-wrap">
             <div class="day-bar-fill" style="width:${pct}%;background:${color};"></div>
             <div class="day-bar-obj" style="left:${objPct}%;"></div>
+            <div class="day-bar-tdee" style="left:${tdeePct}%;"></div>
           </div>
         </div>
         <span class="day-bar-val" style="color:${color};font-weight:${over?'700':'400'}">${total?total+' kcal':'—'}</span>
       </div>`;
     });
-    html+=`<div class="an-note" style="margin-top:8px;">🟢 Por debajo del objetivo · 🟡 Hasta +150 kcal · 🔴 Más de +150 kcal · Línea = objetivo ${OBJETIVO} kcal</div>`;
+    html+=`<div class="an-note" style="margin-top:8px;">🟢 Por debajo del objetivo · 🟡 Entre objetivo y TDEE · 🔴 Por encima del TDEE · <span style="color:#e0a830;font-weight:600;">┅</span> Objetivo ${OBJETIVO} kcal · <span style="color:#c0392b;font-weight:600;">│</span> TDEE ${tdee} kcal</div>`;
   }
   html+=`</div></div>`;
 
@@ -4383,19 +4810,31 @@ function renderAnalisis(){
     html+=`<div class="an-empty">Acumula datos de varias semanas para ver la tendencia.</div>`;
   } else {
     const predPesos=trendRows.map(()=>null);
-    trendRows.forEach((r,i)=>{if(r.pesoReal!=null)predPesos[i]=r.pesoReal;});
-    const lastIdx=trendRows.length-1;
-    if(predPesos[lastIdx]==null)predPesos[lastIdx]=userProfile.peso;
-    for(let i=lastIdx-1;i>=0;i--){
-      if(predPesos[i]!=null)continue;
-      const next=predPesos[i+1];
-      const wg=trendRows[i].wGrams;
-      predPesos[i]=next!=null&&wg!=null?Math.round((next+wg/1000)*10)/10:next;
-    }
-    for(let i=lastIdx+1;i<trendRows.length;i++){
-      const base=trendRows[i-1].pesoReal??predPesos[i-1];
-      const wg=trendRows[i-1].wGrams;
+    // Predicción de cada semana = peso real de la semana anterior ± déficit de esa semana
+    // (NO se sobreescribe con el peso real de la propia semana)
+    trendRows.forEach((r,i)=>{
+      if(i===0)return; // primera semana no tiene anterior
+      const prev=trendRows[i-1];
+      const base=prev.pesoReal; // usar siempre el peso real anterior como ancla
+      if(base==null)return;
+      const wg=prev.wGrams;
       predPesos[i]=wg!=null?Math.round((base-wg/1000)*10)/10:base;
+    });
+    // Para semanas sin peso real anterior, proyectar desde el perfil hacia adelante
+    const lastIdx=trendRows.length-1;
+    if(predPesos[lastIdx]==null&&trendRows[lastIdx].pesoReal==null){
+      // buscar la última con peso real y proyectar
+      for(let i=lastIdx;i>=0;i--){
+        if(trendRows[i].pesoReal!=null){
+          let p=trendRows[i].pesoReal;
+          for(let j=i+1;j<=lastIdx;j++){
+            const wg=trendRows[j-1].wGrams;
+            p=wg!=null?Math.round((p-wg/1000)*10)/10:p;
+            if(predPesos[j]==null)predPesos[j]=p;
+          }
+          break;
+        }
+      }
     }
     html+=`<table style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead><tr style="color:var(--muted);font-size:11px;font-weight:600;">
@@ -4493,16 +4932,25 @@ function renderWeightChart(){
     return{w,kw,mon,media,wDef,wGrams,pesoReal:wLog.weight||null,isCycle:cycleWeeks.has(wk)};
   });
 
-  // Predicción: anclar al más reciente, proyectar hacia atrás
+  // Predicción = peso real semana anterior ± déficit
   const predPesos=weekData.map(()=>null);
-  weekData.forEach((d,i)=>{if(d.pesoReal!=null)predPesos[i]=d.pesoReal;});
-  const lastIdx=weekData.length-1;
-  if(predPesos[lastIdx]==null)predPesos[lastIdx]=userProfile.peso;
-  for(let i=lastIdx-1;i>=0;i--){
-    if(predPesos[i]!=null)continue;
-    const next=predPesos[i+1];
-    const wg=weekData[i].wGrams;
-    predPesos[i]=next!=null&&wg!=null?Math.round((next+wg/1000)*10)/10:next;
+  weekData.forEach((d,i)=>{
+    if(i===0)return;
+    const prev=weekData[i-1];
+    const base=prev.pesoReal;
+    if(base==null)return;
+    const wg=prev.wGrams;
+    predPesos[i]=wg!=null?Math.round((base-wg/1000)*10)/10:base;
+  });
+  // Proyectar hacia adelante desde el último peso real conocido
+  const lastRealIdx=weekData.reduce((acc,d,i)=>d.pesoReal!=null?i:acc,-1);
+  if(lastRealIdx>=0){
+    let p=weekData[lastRealIdx].pesoReal;
+    for(let i=lastRealIdx+1;i<weekData.length;i++){
+      const wg=weekData[i-1].wGrams;
+      p=wg!=null?Math.round((p-wg/1000)*10)/10:p;
+      if(predPesos[i]==null)predPesos[i]=p;
+    }
   }
 
   // SVG
