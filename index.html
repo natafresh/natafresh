@@ -183,6 +183,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 .lgrp-dot{width:8px;height:8px;border-radius:50%;}
 .litem{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-light);font-size:12px;cursor:pointer;flex-wrap:wrap;}
 .litem:last-child{border-bottom:none;}
+.litem.hidden{display:none;}
 .litem.checked .iname{text-decoration:line-through;color:var(--faint);}
 .litem.pantry-item .iname{color:var(--muted);}
 .lchk{width:15px;height:15px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .1s,border-color .1s;}
@@ -589,9 +590,10 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
 @media (max-width: 680px){
   .tab-desktop{display:none !important;}
   .tbr-desktop{display:none !important;}
-  .tabs-bar{padding:0 12px;}
-  .logo span{display:none;}
+  .tabs-bar{padding:0 8px;flex-wrap:nowrap;}
+  .logo{display:none !important;}
   .hoy-wrap{padding:20px 16px 24px;gap:20px;min-height:auto;justify-content:flex-start;}
+  .tbr{padding:0;}
 }
 @media (min-width: 681px){
   .btn-gear{display:none !important;}
@@ -831,6 +833,10 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
       </div>
       <div class="mlist-pane-footer-row">
         <button class="mlist-pane-reset" onclick="mpReset()">↺ Restablecer todo</button>
+        <div class="seg" style="margin-left:auto;">
+          <button id="btnMlTachar" onclick="setHideCheckedMl(false)">✓ Tachar</button>
+          <button id="btnMlOcultar" onclick="setHideCheckedMl(true)">✓ Ocultar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -908,6 +914,10 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
       <div class="seg">
         <button class="active" id="btnCat" onclick="setMode('cat')">Por categoría</button>
         <button id="btnRec" onclick="setMode('rec')">Por receta</button>
+      </div>
+      <div class="seg">
+        <button id="btnChkTachar" onclick="setHideChecked(false)">✓ Tachar</button>
+        <button id="btnChkOcultar" onclick="setHideChecked(true)">✓ Ocultar</button>
       </div>
       <button class="btn" onclick="uncheckAll()">Restablecer</button>
     </div>
@@ -1334,7 +1344,7 @@ let weightLog={};
 let leftovers={};
 let cheatDays={};
 let catOverrides={}; // {ingKey: catName}
-let recipes=[],offers=[],checked={},listMode='cat',listWo=0;
+let recipes=[],offers=[],checked={},listMode='cat',listWo=0,hideChecked=false;
 let aliases={};
 let shopDayOfWeek=5,shopDateOverride=null;
 let prices={};
@@ -2638,6 +2648,9 @@ function sumQty(qtys){
 }
 
 function setMode(m){listMode=m;document.getElementById('btnCat').classList.toggle('active',m==='cat');document.getElementById('btnRec').classList.toggle('active',m==='rec');renderList();}
+function setHideChecked(v){hideChecked=v;document.getElementById('btnChkTachar').classList.toggle('active',!v);document.getElementById('btnChkOcultar').classList.toggle('active',v);renderList();}
+function initHideCheckedBtn(){document.getElementById('btnChkTachar').classList.toggle('active',!hideChecked);document.getElementById('btnChkOcultar').classList.toggle('active',hideChecked);}
+function setHideCheckedMl(v){hideCheckedMl=v;document.getElementById('btnMlTachar').classList.toggle('active',!v);document.getElementById('btnMlOcultar').classList.toggle('active',v);renderMobileListPane();}
 function updateWkSel(){listWo=wo;}
 
 function renderList(){
@@ -2771,7 +2784,7 @@ function renderList(){
     const pantryBadge=isPantry?'<span class="ipantry">🏠 despensa</span>':'';
     const toggleBtn=`<button class="pantry-toggle" onclick="togglePantry(event,'${ingKey(item.name)}')">${isPantry?'↑ quitar':'↓ despensa'}</button>`;
     const catBtn=`<button class="pantry-toggle no-print" style="opacity:.4;" onclick="openCatPicker(event,'${ingKey(item.name)}')">📂</button>`;
-    return `<div class="litem${ck?' checked':''}${isPantry?' pantry-item':''}" onclick="toggleChk('${item.id}')">
+    return `<div class="litem${ck?' checked':''}${isPantry?' pantry-item':''}${ck&&hideChecked?' hidden':''}" onclick="toggleChk('${item.id}')">
       <div class="lchk"><span class="chkmark">✓</span></div>
       <span class="iname">${item.name}${qtyDisplay?` <span class="iqty">${qtyDisplay}</span>`:''}</span>
       ${pantryBadge}${pt}${futureTag}${toggleBtn}${catBtn}
@@ -3045,7 +3058,7 @@ function importData(ev){
       weightLog=parsed.weightLog||{};leftovers=parsed.leftovers||{};
       cheatDays=parsed.cheatDays||{};catOverrides=parsed.catOverrides||{};
       save(); // Guardar en Supabase
-      load();initShopDayControls();render();
+      load();initShopDayControls();initHideCheckedBtn();render();
       if(document.getElementById('pane-list').classList.contains('active')){renderShopDay();renderList();}
       if(document.getElementById('pane-offers').classList.contains('active'))renderOffers();
       if(document.getElementById('pane-preise').classList.contains('active'))renderPreise();
@@ -3264,7 +3277,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 </head>
 <body>
 <div class="sticky-hdr">
-  <div style="font-size:20px;font-weight:700;">🛒 Lista de la compra</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:20px;font-weight:700;">🛒 Lista de la compra</div>
+    <button id="hideDoneBtn" onclick="toggleHideDone()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">🙈 Ocultar</button>
+  </div>
   <div style="font-size:13px;margin-top:4px;opacity:.9;" id="hdrStats">${totalItems} artículos · <span id="budgetDisplay">~${staticBudget} €</span> · ${pantryUnchecked.length} despensa</div>
   <div style="font-size:11px;margin-top:2px;opacity:.65;">NataFresh · ${dateStr}</div>
 </div>
@@ -3294,9 +3310,20 @@ function recalcBudget(){
 }
 
 function toggleItem(id,el){
-  if(checkedSet.has(id)){checkedSet.delete(id);el.classList.remove('checked');el.querySelector('.chk-icon').textContent='☐';}
-  else{checkedSet.add(id);el.classList.add('checked');el.querySelector('.chk-icon').textContent='✓';}
+  if(checkedSet.has(id)){checkedSet.delete(id);el.classList.remove('checked');if(hidingDone)el.style.display='';}
+  else{
+    checkedSet.add(id);el.classList.add('checked');el.querySelector('.chk-icon').textContent='✓';
+    if(hidingDone)setTimeout(()=>{el.style.display='none';},350);
+  }
   recalcBudget();
+}
+
+let hidingDone=false;
+function toggleHideDone(){
+  hidingDone=!hidingDone;
+  const btn=document.getElementById('hideDoneBtn');
+  btn.textContent=hidingDone?'👁 Mostrar':'🙈 Ocultar';
+  document.querySelectorAll('.item.checked').forEach(el=>el.style.display=hidingDone?'none':'');
 }
 
 let manualCount=0;
@@ -3319,9 +3346,13 @@ function addManual(){
 function resetAll(){
   if(!confirm('¿Restablecer toda la lista?'))return;
   checkedSet.clear();
-  document.querySelectorAll('.item.checked').forEach(el=>{el.classList.remove('checked');el.querySelector('.chk-icon').textContent=el.classList.contains('pantry-item')?'☐':'☐';});
-  // Mostrar items ocultos manualmente (por si acaso)
-  document.querySelectorAll('.item').forEach(el=>el.style.display='');
+  document.querySelectorAll('.item').forEach(el=>{
+    el.classList.remove('checked');
+    el.style.display='';
+    el.querySelector('.chk-icon').textContent='☐';
+  });
+  hidingDone=false;
+  document.getElementById('hideDoneBtn').textContent='🙈 Ocultar';
   recalcBudget();
 }
 <\/script>
@@ -3630,7 +3661,7 @@ function renderHoy(){
     html+=`<div class="hoy-card cena" onclick="openCookRecipe()" style="border-top:3px solid ${col.mid};">
       <div class="hoy-card-icon" style="background:var(--light);"><img src="/icon-cena.png" style="width:56px;height:56px;object-fit:contain;"/></div>
       <div class="hoy-card-name">${todayRec.name}</div>
-      <div class="hoy-card-meta">${todayRec.time||''}${kcalRec&&kcalRec!=='—'?' · '+kcalRec+' kcal':''}</div>
+      <div class="hoy-card-meta">${todayRec.time||''}${kcalRec&&kcalRec!=='—'?' · '+String(kcalRec).replace(/\s*kcal/i,'').trim()+' kcal':''}</div>
     </div>`;
   } else {
     html+=`<div class="hoy-card cena" style="opacity:.5;cursor:default;">
@@ -3755,6 +3786,7 @@ function handleShopBtn(){
 // Uses global `checked` object (same keys as desktop list) + mlExtra for manual items
 let mlExtra=[]; // {name, qty}
 let _mlSyncInterval=null;
+let hideCheckedMl=false;
 let _mlLastCheckedStr='';
 let _mlDays=7; // days selected from shop dialog
 
@@ -3837,7 +3869,7 @@ function renderMobileListPane(){
     const pending=items.filter(i=>!checked[i.id]);
     const doneItems=items.filter(i=>!!checked[i.id]);
     html+=`<div class="mlist-pcat">${emoji} ${cat}</div>`;
-    [...pending,...doneItems].forEach(item=>{
+    [...pending,...(hideCheckedMl?[]:doneItems)].forEach(item=>{
       const ck=!!checked[item.id];
       const qty=sumQty(item.qtys);
       let qtyDisplay=qty||'';
@@ -3861,6 +3893,7 @@ function renderMobileListPane(){
     html+=`<div class="mlist-pcat">🏠 Despensa (verificar)</div>`;
     pantryItems.forEach(item=>{
       const ck=!!checked[item.id];
+      if(hideCheckedMl&&ck)return;
       const qty=sumQty(item.qtys);
       html+=`<div class="mlist-pitem pantry-row${ck?' done':''}" onclick="mpToggle('${item.id}')">
         <div class="mlist-pchk"><span class="mlist-pchk-mark">✓</span></div>
@@ -3871,6 +3904,8 @@ function renderMobileListPane(){
   }
 
   document.getElementById('mpBody').innerHTML=html;
+  document.getElementById('btnMlTachar').classList.toggle('active',!hideCheckedMl);
+  document.getElementById('btnMlOcultar').classList.toggle('active',hideCheckedMl);
 }
 
 function mpToggle(id){
@@ -4546,6 +4581,7 @@ async function init(){
     initShopDayControls();
     render();
     renderHoy();
+    document.getElementById('legBar').style.display='none'; // hoy tab no muestra leyenda
     overlay.style.display='none';
     // Aviso si no hay datos
     if(!recipes.length&&!Object.keys(prices).length&&!Object.keys(lunches).length){
@@ -4745,8 +4781,8 @@ function pdfParse(items){
   }
 
   // Ingredients
-  const UNITS_END=/\s*([½¼¾\d][\d.,\/]*\s*(?:g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack|pieza|piezas|unidad|unidades|cucharada|cucharadas)\.?)$/i;
-  const UNITS_ONLY=/^([½¼¾\d][\d.,\/]*)\s*(g|ml|kg|l|EL|TL|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack|pieza|piezas|unidad|unidades|cucharada|cucharadas)\.?\s*$/i;
+  const UNITS_END=/\s*([½¼¾\d][\d.,\/]*\s*(?:g|ml|kg|l|EL|TL|Esslöffel|Teelöffel|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack|Prise|Messerspitze|pieza|piezas|unidad|unidades|cucharada|cucharadas)\.?)$/i;
+  const UNITS_ONLY=/^([½¼¾\d][\d.,\/]*)\s*(g|ml|kg|l|EL|TL|Esslöffel|Teelöffel|Stk\.|Stk|Bund|Pck\.|Dose|Stück|cl|Pack|Prise|Messerspitze|pieza|piezas|unidad|unidades|cucharada|cucharadas)\.?\s*$/i;
   const TDASH=/\s*[–—]\s*$/;
   const ings=[],vorrat=[];
   const NONE=0,ZUT=1,VOR=2;let sec=NONE;
@@ -4760,9 +4796,20 @@ function pdfParse(items){
     if(/^[•·\-]\s/.test(raw))continue;
     const t=raw.replace(TDASH,'').trim();
     if(!t||/^[–—]$/.test(t)||/^(nach Geschmack|para probar|a gusto|al gusto|al gusto)/i.test(t)||/^(Für|Para) \d/i.test(t))continue;
-    if(sec===VOR){vorrat.push(t);continue;}
+    if(sec===VOR){
+      // Si tiene cantidad al final de línea → va a ings con qty propio
+      const eqV=t.match(UNITS_END);
+      if(eqV){const qV=eqV[1].trim();const nV=t.slice(0,t.length-eqV[0].length).trim();if(nV.length>1)ings.push({name:nV,qty:qV});continue;}
+      // Si la siguiente línea es una cantidad → empareja
+      let j=i+1,qV='';
+      while(j<cleanLines.length){const nxt=cleanLines[j].text.trim();if(!nxt||/^\(/.test(nxt)){j++;continue;}if(UNITS_ONLY.test(nxt)){qV=nxt;j++;break;}break;}
+      if(qV)ings.push({name:t,qty:qV});
+      else vorrat.push(t);
+      i=j-1;
+      continue;
+    }
     const eq=t.match(UNITS_END);
-    if(eq){const qty=eq[1].trim();const name=t.slice(0,t.length-eq[0].length).trim();if(name.length>1)ings.push({name,qty});i++;continue;}
+    if(eq){const qty=eq[1].trim();const name=t.slice(0,t.length-eq[0].length).trim();if(name.length>1)ings.push({name,qty});continue;}
     const name=t;if(name.length<2)continue;
     let j=i+1,qty='';
     while(j<cleanLines.length){const n=cleanLines[j].text.trim();if(/^\(/.test(n)||!n||/^nach Geschmack|para probar|a gusto|al gusto/i.test(n)){j++;continue;}if(UNITS_ONLY.test(n)){qty=n;j++;break;}break;}
@@ -4817,6 +4864,27 @@ function pdfParse(items){
   return r;
 }
 function pdfParseSteps(){}
+
+function pdfResetForm(){
+  pdfSelectedWo=null;pdfSelectedDay=null;
+  pdfProtein='huhn';
+  // Ocultar formulario y resetear drop zone
+  document.getElementById('pdfForm').style.display='none';
+  document.getElementById('pdfDrop').classList.remove('loaded');
+  document.getElementById('pdfIcon').textContent='📥';
+  document.getElementById('pdfLabel').textContent='PDF HelloFresh aquí o clic para seleccionar';
+  // Limpiar inputs de archivo y texto
+  document.getElementById('pdfFileIn').value='';
+  const ta=document.getElementById('pdfTextInput');if(ta){ta.value='';ta.blur();}
+  // Limpiar todos los campos del formulario
+  ['pdfName','pdfSub2','pdfTime','pdfKcal','pdfProt','pdfHc','pdfFett','pdfFibra','pdfVorrat','pdfTip','pdfAllergen'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('pdfIngList').innerHTML='';
+  document.getElementById('pdfStepList').innerHTML='';
+  document.querySelectorAll('.prot-btn').forEach(b=>b.classList.toggle('active',b.dataset.p==='huhn'));
+  pdfSetStatus('','');
+}
 
 // ── POPULATE FORM ────────────────────────────────────
 function pdfPopulate(r){
@@ -4990,15 +5058,8 @@ function pdfAddToPlanner(){
   save();saveRecipes();render();
   showToast(`"${name}" añadida al ${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'][dayIdx]}`);
 
-  // Reset form
-  pdfSelectedWo=null;pdfSelectedDay=null;
-  document.getElementById('pdfForm').style.display='none';
-  document.getElementById('pdfDrop').classList.remove('loaded');
-  document.getElementById('pdfIcon').textContent='📥';
-  document.getElementById('pdfLabel').textContent='PDF HelloFresh aquí o clic para seleccionar';
-  document.getElementById('pdfFileIn').value='';
-  document.getElementById('pdfTextInput').value='';
-  pdfSetStatus('','');
+  // Reset completo
+  pdfResetForm();
 
   // Switch to calendar
   switchTab('plan');
