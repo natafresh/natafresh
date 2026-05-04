@@ -855,8 +855,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn" onclick="goToday()">Hoy</button>
-      <button class="btn" id="btnMigrate" style="background:#fff3cd;border-color:#e0a830;color:#7a4520;" onclick="migrateShiftOneWeek()" title="Mueve todas las recetas una semana adelante">⚠️ Subir recetas 1 sem.</button>
-      <button class="btn" id="btnUndo" style="background:#fde8e8;border-color:#e08080;color:#7a2020;" onclick="migrateUndo()" title="Deshace el desplazamiento de una semana">↩️ Deshacer</button>
+      <button class="btn" id="btnRepair" style="background:#fde8e8;border-color:#e08080;color:#7a2020;font-weight:600;" onclick="repairMinus3()" title="Corrige el calendario moviendo las cenas 3 semanas atrás">🔧 Reparar calendario</button>
       <button class="btn" onclick="printWeek(wo)" title="Imprimir semana visible">&#128438; Esta semana</button>
       <button class="btn" onclick="printAllWeeks()" title="Imprimir las 4 semanas">&#128438; Todo</button>
     </div>
@@ -1885,23 +1884,12 @@ function removeAvoid(person,word){
 function delR(e,id){e.stopPropagation();recipes=recipes.filter(r=>r.id!==id);save();render();showToast('Receta eliminada');}
 function shift(dir){wo+=dir;render();}
 function goToday(){if(!epoch)epoch=getCurrentMon();wo=Math.round((getCurrentMon()-epoch)/(7*24*3600*1000));render();}
-function migrateShiftOneWeek(){
-  if(!recipes.length){showToast('No hay recetas que mover');return;}
-  if(!confirm(`¿Mover las ${recipes.length} recetas una semana hacia adelante? Esta acción no se puede deshacer.`))return;
-  recipes.forEach(r=>r.wo+=1);
-  Object.values(leftovers).forEach(lf=>{if(lf.targetWo!=null)lf.targetWo+=1;});
-  save();render();
-  document.getElementById('btnMigrate')?.remove();
-  showToast('✅ Recetas desplazadas una semana');
-}
-function migrateUndo(){
-  if(!recipes.length){showToast('No hay recetas');return;}
-  if(!confirm(`¿DESHACER el desplazamiento? Todas las recetas volverán una semana atrás.`))return;
-  recipes.forEach(r=>r.wo-=1);
-  Object.values(leftovers).forEach(lf=>{if(lf.targetWo!=null)lf.targetWo-=1;});
-  save();render();
-  document.getElementById('btnUndo')?.remove();
-  showToast('↩️ Desplazamiento deshecho');
+function repairMinus3(){
+  if(!confirm('¿Mover todas las cenas 3 semanas atrás para dejar el calendario correcto?'))return;
+  recipes.forEach(r=>r.wo-=3);
+  save();goToday();
+  document.getElementById('btnRepair')?.remove();
+  showToast('✅ Calendario reparado');
 }
 
 // MODAL ADD RECIPE
