@@ -1052,6 +1052,7 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
   <div class="an-week-nav">
     <button onclick="anWo--;renderAnalisis()">‹ Anterior</button>
     <div class="an-week-label" id="anWeekLabel"></div>
+    <button onclick="anWo=wo;renderAnalisis()" style="font-size:11px;padding:4px 8px;opacity:.7;">Hoy</button>
     <button onclick="anWo++;renderAnalisis()">Siguiente ›</button>
   </div>
   <div id="anContent"></div>
@@ -1298,6 +1299,36 @@ body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background
     <div class="mact">
       <button class="btn" onclick="closeAvoidModal()">Cerrar</button>
     </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:18px 0 14px;">
+    <div class="lmodal-t" style="font-size:14px;margin-bottom:4px;">📊 Mi perfil calórico</div>
+    <div class="lmodal-sub" style="margin-bottom:12px;">Usado para calcular tu objetivo calórico y el análisis semanal</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Peso (kg)</label>
+        <input type="number" id="profPeso" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;box-sizing:border-box;" step="0.1" oninput="updateProfResult()"></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Altura (cm)</label>
+        <input type="number" id="profAltura" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;box-sizing:border-box;" oninput="updateProfResult()"></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Edad</label>
+        <input type="number" id="profEdad" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;box-sizing:border-box;" oninput="updateProfResult()"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Actividad</label>
+        <select id="profActividad" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;" onchange="updateProfResult()">
+          <option value="sedentaria">Sedentaria (oficina)</option>
+          <option value="ligera">Ligera (caminar)</option>
+          <option value="moderada">Moderada (ejercicio)</option>
+        </select></div>
+      <div><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Déficit objetivo</label>
+        <select id="profDeficit" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;" onchange="updateProfResult()">
+          <option value="250">Conservador (-250 kcal)</option>
+          <option value="400">Moderado (-400 kcal)</option>
+          <option value="600">Agresivo (-600 kcal)</option>
+        </select></div>
+    </div>
+    <div style="margin-bottom:12px;"><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Calorías fijas/día <span style="font-weight:400;">(desayuno + cafés + snacks fijos)</span></label>
+      <input type="number" id="profFijo" style="width:120px;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;" oninput="updateProfResult()">
+    </div>
+    <div id="profResult" style="background:var(--light);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;"></div>
+    <button class="btn btn-dk" style="width:100%;" onclick="saveProfile()">💾 Guardar perfil</button>
   </div>
 </div>
 
@@ -1341,6 +1372,7 @@ const PRICE_EST={huhn:5,schwein:5,fisch:12,veggi:3,rind:8,wurst:4};
 let wo=0,dragId=null,dragLunchKey=null,nid=100;
 let epoch=null;
 let weightLog={};
+let cycleWeeks=new Set(); // keys tipo "19_2026"
 let leftovers={};
 let cheatDays={};
 let catOverrides={}; // {ingKey: catName}
@@ -1410,6 +1442,9 @@ async function load(){
       cheatDays=d.cheatDays||{};catOverrides=d.catOverrides||{};
       mlExtra=d.mlExtra||[];
       if(d.epoch)epoch=new Date(d.epoch);
+      if(d.userProfile)userProfile={...userProfile,...d.userProfile};
+      if(d.cycleWeeks)cycleWeeks=new Set(d.cycleWeeks);
+      updateProfileConstants();
     }
   }catch(e){console.error('Load error',e);}
   // Cargar recipeData por separado (puede ser grande por las fotos)
@@ -1429,7 +1464,7 @@ function save(){
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(async()=>{
     try{
-      const payload={key:'hf_v4',value:{r:recipes,o:offers,c:checked,n:nid,sdw:shopDayOfWeek,sdd:shopDateOverride,prices,pantry:[...pantry],ratings,aliases,lunches,avoidList,weightLog,leftovers,cheatDays,catOverrides,mlExtra,epoch:epoch?epoch.toISOString():null},updated_at:new Date().toISOString()};
+      const payload={key:'hf_v4',value:{r:recipes,o:offers,c:checked,n:nid,sdw:shopDayOfWeek,sdd:shopDateOverride,prices,pantry:[...pantry],ratings,aliases,lunches,avoidList,weightLog,leftovers,cheatDays,catOverrides,mlExtra,epoch:epoch?epoch.toISOString():null,userProfile,cycleWeeks:[...cycleWeeks]},updated_at:new Date().toISOString()};
       await fetch(`${SUPA_URL}/rest/v1/planificador_data`,{
         method:'POST',
         headers:{...SUPA_HEADERS,'Prefer':'resolution=merge-duplicates'},
@@ -1483,7 +1518,7 @@ function render(){
       const ck=`${absW}_${d}`;
       const isCheat=!!cheatDays[ck];
       const dayHdr=mk('div','day-dt');
-      dayHdr.innerHTML=`${isCheat?`<span class="cheat-badge">🍕 Cheat</span>`:`<button class="cheat-btn${isCheat?' active':''}" title="Marcar como cheat day" onclick="toggleCheatDay('${ck}')">🍕</button>`}${fmt(cd)}`;
+      dayHdr.innerHTML=`<button class="cheat-btn${isCheat?' active':''}" title="${isCheat?'Quitar cheat day':'Marcar como cheat day'}" onclick="toggleCheatDay('${ck}')">${isCheat?'🍕 Cheat':'🍕'}</button>${fmt(cd)}`;
       cell.appendChild(dayHdr);
       const rec=recipes.find(r=>r.wo===absW&&r.day===d);
       if(rec){cell.appendChild(makeChip(rec));}
@@ -1876,9 +1911,51 @@ function getStepRows(){
 // AVOID LIST
 function openAvoidModal(){
   renderAvoidTags();
+  // Rellenar perfil
+  document.getElementById('profPeso').value=userProfile.peso||'';
+  document.getElementById('profAltura').value=userProfile.altura||'';
+  document.getElementById('profEdad').value=userProfile.edad||'';
+  document.getElementById('profActividad').value=userProfile.actividad||'sedentaria';
+  document.getElementById('profDeficit').value=String(userProfile.deficit||400);
+  document.getElementById('profFijo').value=userProfile.kcalFijas||595;
+  updateProfResult();
   document.getElementById('avoidModalOv').classList.add('open');
 }
 function closeAvoidModal(){document.getElementById('avoidModalOv').classList.remove('open');}
+
+function updateProfResult(){
+  const p={
+    peso:parseFloat(document.getElementById('profPeso').value)||userProfile.peso,
+    altura:parseFloat(document.getElementById('profAltura').value)||userProfile.altura,
+    edad:parseInt(document.getElementById('profEdad').value)||userProfile.edad,
+    actividad:document.getElementById('profActividad').value,
+    deficit:parseInt(document.getElementById('profDeficit').value)||400,
+    kcalFijas:parseInt(document.getElementById('profFijo').value)||595,
+  };
+  const tdee=calcTDEE(p);
+  const obj=tdee-p.deficit;
+  const disp=document.getElementById('profResult');
+  if(!disp)return;
+  disp.innerHTML=`<strong>TDEE estimado:</strong> ${tdee} kcal/día &nbsp;·&nbsp; <strong>Objetivo:</strong> ${obj} kcal/día<br>
+    <span style="color:var(--muted);">Pérdida estimada: ~${Math.round(p.deficit*7/7700*1000)}g/semana · ~${(p.deficit*30/7700).toFixed(1)}kg/mes</span>`;
+}
+
+function saveProfile(){
+  userProfile={
+    ...userProfile,
+    peso:parseFloat(document.getElementById('profPeso').value)||userProfile.peso,
+    altura:parseFloat(document.getElementById('profAltura').value)||userProfile.altura,
+    edad:parseInt(document.getElementById('profEdad').value)||userProfile.edad,
+    actividad:document.getElementById('profActividad').value,
+    deficit:parseInt(document.getElementById('profDeficit').value)||400,
+    kcalFijas:parseInt(document.getElementById('profFijo').value)||595,
+  };
+  updateProfileConstants();
+  save();
+  if(document.getElementById('pane-analisis').classList.contains('active'))renderAnalisis();
+  showToast('✅ Perfil guardado');
+  closeAvoidModal();
+}
 
 function renderAvoidTags(){
   ['nata','thomas'].forEach(p=>{
@@ -4165,8 +4242,10 @@ function estimateLunchKcal(l){
   return 380; // generic
 }
 
-const FIJO=580; // desayuno 365 + cafés+choco 215
-const OBJETIVO=1550;
+let userProfile={nombre:'Nata',edad:38,peso:80,altura:168,actividad:'sedentaria',deficit:400,kcalFijas:595};
+let FIJO=595,OBJETIVO=1550;
+function calcTDEE(p){const bmr=10*p.peso+6.25*p.altura-5*p.edad-161;const f={sedentaria:1.2,ligera:1.375,moderada:1.55}[p.actividad]||1.2;return Math.round(bmr*f);}
+function updateProfileConstants(){FIJO=userProfile.kcalFijas||595;OBJETIVO=calcTDEE(userProfile)-(userProfile.deficit||400);}
 const DAYS_F_SHORT=['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
 
 function renderAnalisis(){
@@ -4175,6 +4254,7 @@ function renderAnalisis(){
   document.getElementById('anWeekLabel').textContent=`Semana ${kw} · ${fmt(mon)} – ${fmt(sun)}`;
 
   const weekRecs=recipes.filter(r=>r.wo===anWo).sort((a,b)=>a.day-b.day);
+  const tdee=calcTDEE(userProfile);
 
   // ── Caloric data per day ──
   const dayData=[];
@@ -4182,377 +4262,313 @@ function renderAnalisis(){
     const rec=weekRecs.find(r=>r.day===d);
     const lkey=lunchKey(anWo,d);
     const l=lunches[lkey]||null;
-    const srcKey=`${anWo}_${d}`;
-    const lSrcKey=`lunch_${anWo}_${d}`;
-    const srcLeftover=leftovers[srcKey]; // recipe leftover this day
-    const lunchSrcLeftover=leftovers[lSrcKey]; // tupper leftover this day
+    const srcLeftover=leftovers[`${anWo}_${d}`];
+    const lunchSrcLeftover=leftovers[`lunch_${anWo}_${d}`];
     const isTarget=Object.entries(leftovers).find(([k,lv])=>!lv.isLunch&&lv.targetWo===anWo&&lv.targetDay===d);
     const lunchIsTarget=Object.entries(leftovers).find(([k,lv])=>lv.isLunch&&lv.targetWo===anWo&&lv.targetDay===d);
     let cenaKcal=rec?getKcal(rec.name)||null:null;
     let tupperKcal=estimateLunchKcal(l);
-    // Adjust recipe leftovers
     if(cenaKcal&&srcLeftover)cenaKcal=Math.round(cenaKcal*(1-srcLeftover.fraction));
-    if(isTarget){
-      const [srcK,srcLv]=isTarget;
-      const srcRec=recipes.find(x=>x.id===srcLv.recipeId);
-      const srcKcal=srcRec?getKcal(srcRec.name)||null:null;
-      if(srcKcal)cenaKcal=Math.round(srcKcal*srcLv.fraction);
-    }
-    // Adjust lunch leftovers
+    if(isTarget){const [,srcLv]=isTarget;const srcRec=recipes.find(x=>x.id===srcLv.recipeId);const srcKcal=srcRec?getKcal(srcRec.name)||null:null;if(srcKcal)cenaKcal=Math.round(srcKcal*srcLv.fraction);}
     if(tupperKcal&&lunchSrcLeftover)tupperKcal=Math.round(tupperKcal*(1-lunchSrcLeftover.fraction));
-    if(lunchIsTarget){
-      const [lSrcK,lSrcLv]=lunchIsTarget;
-      const [,lSrcWo,lSrcDay]=lSrcK.split('_').map(Number);
-      const srcL=lunches[lunchKey(lSrcWo,lSrcDay)]||null;
-      const srcLunchKcal=estimateLunchKcal(srcL);
-      if(srcLunchKcal)tupperKcal=Math.round(srcLunchKcal*lSrcLv.fraction);
-    }
+    if(lunchIsTarget){const [lSrcK,lSrcLv]=lunchIsTarget;const [,lSrcWo,lSrcDay]=lSrcK.split('_').map(Number);const srcL=lunches[lunchKey(lSrcWo,lSrcDay)]||null;const srcLunchKcal=estimateLunchKcal(srcL);if(srcLunchKcal)tupperKcal=Math.round(srcLunchKcal*lSrcLv.fraction);}
     const cheatKcal=cheatDays[`${anWo}_${d}`]||0;
     const total=(cenaKcal||tupperKcal)?FIJO+(tupperKcal||0)+(cenaKcal||0)+cheatKcal:null;
-    const isPartial=total!==null&&(!cenaKcal||!tupperKcal);
-    dayData.push({day:d,rec,l,cenaKcal,tupperKcal,total,isPartial,cheatKcal});
+    dayData.push({day:d,rec,l,cenaKcal,tupperKcal,total,cheatKcal,hasData:!!(cenaKcal||tupperKcal)});
   }
 
   const known=dayData.filter(x=>x.total!==null);
   const media=known.length?Math.round(known.reduce((s,x)=>s+x.total,0)/known.length):null;
-  const deficit=media?OBJETIVO-media:null;
-  const mediaClass=deficit===null?'':deficit>=-50?'good':deficit>=-200?'warn':'bad';
+  const exceso=media!==null?media-OBJETIVO:null; // positivo=por encima del obj, negativo=por debajo (bien)
+  const gPerSemana=exceso!==null?Math.round(Math.abs(exceso)*7/7700*1000):null;
+  const perdiendo=exceso!==null&&exceso<0;
+  const maxKcal=Math.max(tdee+300,...dayData.filter(x=>x.total).map(x=>x.total));
 
-  // ── Protein distribution (whole DB) ──
-  const protCount={huhn:0,schwein:0,rind:0,fisch:0,veggi:0,wurst:0};
-  recipes.forEach(r=>{if(protCount[r.type]!==undefined)protCount[r.type]++;});
-  const protTotal=Object.values(protCount).reduce((s,v)=>s+v,0)||1;
-  const protLabels={huhn:'Pollo/Geflügel',schwein:'Cerdo',rind:'Ternera',fisch:'Pescado',veggi:'Vegetariano',wurst:'Embutido'};
-
-  // ── Supermarket best ──
-  const superTotals={carrefour:0,mercadona:0,lidl:0,consum:0};
-  const superCounts={carrefour:0,mercadona:0,lidl:0,consum:0};
-  Object.values(prices).forEach(pe=>{
-    SUPERS.forEach(s=>{if(pe[s]!==null&&pe[s]!==undefined){superTotals[s]+=pe[s];superCounts[s]++;}});
-  });
-  const superHasData=Object.values(superCounts).some(v=>v>0);
-  const superAvgs={};
-  SUPERS.forEach(s=>{superAvgs[s]=superCounts[s]>0?superTotals[s]/superCounts[s]:null;});
-  const minAvg=superHasData?Math.min(...SUPERS.filter(s=>superAvgs[s]!==null).map(s=>superAvgs[s])):null;
-
-  // ── MAX for bar scale ──
-  const maxKcal=Math.max(2600,...dayData.filter(x=>x.total).map(x=>x.total));
-
-  // ── HTML ──
   let html='';
 
-  // Summary stats
-  html+=`<div class="an-stats">
-    <div class="an-stat">
-      <div class="asv">${FIJO}</div><div class="asl">kcal fijas/día</div>
-    </div>
-    <div class="an-stat ${mediaClass}">
-      <div class="asv">${media||'—'}</div><div class="asl">Media diaria</div>
-    </div>
-    <div class="an-stat ${deficit===null?'':deficit>0?'good':deficit>-100?'warn':'bad'}">
-      <div class="asv">${deficit===null?'—':(deficit>0?'+':'')+deficit}</div><div class="asl">Déficit medio</div>
-    </div>
-    <div class="an-stat">
-      <div class="asv">${OBJETIVO}</div><div class="asl">Objetivo kcal</div>
-    </div>
-  </div>`;
+  // ── BLOQUE 1: ¿Voy bien esta semana? ──
+  const semaforo=exceso===null?null:exceso<=-50?'🟢 Vas bien':exceso<=150?'🟡 Cerca del objetivo':'🔴 Por encima del objetivo';
+  const semaforoColor=exceso===null?'var(--muted)':exceso<=-50?'#2e6b30':exceso<=150?'#e0a830':'#e05050';
 
-  // Caloric bars
-  html+=`<div class="an-grid">
-  <div class="an-card full">
-    <div class="an-hdr"><span class="an-title">📊 Análisis calórico diario</span><span class="an-sub">Semana ${kw}</span></div>
+  html+=`<div class="an-card full" style="margin-bottom:14px;">
+    <div class="an-hdr"><span class="an-title">🎯 ¿Voy bien esta semana?</span><span class="an-sub">Sem. ${kw} · ${known.length}/7 días con datos</span></div>
     <div class="an-body">`;
-  const objPct=(OBJETIVO/maxKcal)*100;
-  dayData.forEach(({day,rec,l,cenaKcal,tupperKcal,total,isPartial,cheatKcal})=>{
-    const lbl=DAYS_F_SHORT[day];
-    const pct=total?Math.min((total/maxKcal)*100,100):0;
-    const estado=total===null?'❓':cheatKcal?'🍕':total<=OBJETIVO+50?'✅':total<=OBJETIVO+250?'⚠️':'❌';
-    const color=total===null?'#ddd':cheatKcal?'#e05050':total<=OBJETIVO+50?'#6db870':total<=OBJETIVO+250?'#e0a830':'#e05050';
-    const cenaStr=rec?(cenaKcal?`${rec.name.split(' ')[0]} ${cenaKcal}kcal`:`${rec.name.split(' ')[0]} ?kcal`):'Sin cena';
-    const tupStr=l?(tupperKcal?`Tupper ~${tupperKcal}kcal`:'Tupper —'):'Sin tupper';
-    const cheatStr=cheatKcal?` + 🍕 +${cheatKcal}kcal`:'';
-    const partialMark=isPartial?'~':'';
-    html+=`<div class="day-bar-row">
-      <span class="day-bar-lbl">${lbl}</span>
-      <div style="flex:1;">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">${cenaStr} · ${tupStr}${cheatStr}</div>
-        <div class="day-bar-wrap">
-          <div class="day-bar-fill" style="width:${pct}%;background:${color};${isPartial?'opacity:.6':''}"></div>
-          <div class="day-bar-obj" style="left:${objPct}%;"></div>
-        </div>
+
+  if(media===null){
+    html+=`<div class="an-empty">Añade recetas y tuppers para ver el análisis calórico.</div>`;
+  } else {
+    const excesoLabel=exceso<0?`${Math.abs(Math.round(exceso))} kcal/día de sobra`:`${Math.round(exceso)} kcal/día de exceso`;
+    html+=`<div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+      <div>
+        <div style="font-size:28px;font-weight:700;font-family:'Lora',serif;color:${semaforoColor};">${excesoLabel}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Media ${Math.round(media)} kcal · Objetivo ${OBJETIVO} kcal · TDEE ${tdee} kcal</div>
       </div>
-      <span class="day-bar-val">${total?partialMark+total+' kcal':'—'}</span>
-      <span class="day-bar-state">${estado}</span>
+      <div style="background:${semaforoColor}18;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:${semaforoColor};">${semaforo}</div>
+      ${gPerSemana!==null?`<div style="font-size:13px;color:${perdiendo?'#2e6b30':'#e05050'};font-weight:600;">→ ~${gPerSemana}g ${perdiendo?'perdidos esta semana ✓':'ganados esta semana'}</div>`:''}
     </div>`;
-  });
-  if(known.length<dayData.filter(x=>x.rec||x.l).length){
-    html+=`<div class="an-note">~ = estimación parcial (solo cena o solo tupper disponible). 🍕 = cheat day (+1.000 kcal). Línea roja = objetivo ${OBJETIVO} kcal.</div>`;
-  }
-  html+=`</div></div></div>`;
 
-  // Protein + supermarket row
-  html+=`<div class="an-grid">
-  <div class="an-card">
-    <div class="an-hdr"><span class="an-title">🥩 Distribución de proteínas</span><span class="an-sub">${recipes.length} recetas totales</span></div>
-    <div class="an-body">`;
-  if(protTotal>0){
-    const PROT_C={huhn:C.huhn.mid,schwein:C.schwein.mid,rind:C.rind.mid,fisch:C.fisch.mid,veggi:C.veggi.mid,wurst:C.wurst.mid};
-    // SVG donut
-    const r=40,cx=50,cy=50,stroke=18;
-    const circ=2*Math.PI*r;
-    let offset=0;
-    let slices='';
-    Object.entries(protCount).filter(([,v])=>v>0).forEach(([k,v])=>{
-      const pct=v/protTotal;
-      const dash=pct*circ;
-      const gap=circ-dash;
-      slices+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${PROT_C[k]}" stroke-width="${stroke}"
-        stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}"
-        stroke-dashoffset="${(-offset*circ).toFixed(1)}"
-        transform="rotate(-90 ${cx} ${cy})"/>`;
-      offset+=pct;
+    // Barras por día — verde solo si estás por debajo del objetivo
+    dayData.forEach(({day,rec,l,cenaKcal,tupperKcal,total,cheatKcal})=>{
+      const lbl=DAYS_F_SHORT[day];
+      const pct=total?Math.min((total/maxKcal)*100,100):0;
+      const objPct=(OBJETIVO/maxKcal)*100;
+      const dayExceso=total?total-OBJETIVO:null;
+      const over=dayExceso!==null&&dayExceso>0;
+      const color=!total?'#e0ddd8':cheatKcal?'#e05050':dayExceso<0?'#6db870':dayExceso<=150?'#e0a830':'#e05050';
+      const cenaStr=rec?(cenaKcal?`${rec.name.split(' ').slice(0,2).join(' ')} (${cenaKcal})`:'cena sin kcal'):'sin cena';
+      const tupStr=l?(tupperKcal?`tupper ~${tupperKcal}`:'tupper —'):'sin tupper';
+      html+=`<div class="day-bar-row" style="${over?'background:#fff8f8;border-radius:6px;padding:2px 4px;margin:0 -4px;':''}">
+        <span class="day-bar-lbl" style="font-weight:${over?'700':'400'}">${lbl}</span>
+        <div style="flex:1;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">${cenaStr} · ${tupStr}${cheatKcal?' · 🍕':''}${!total?' · sin datos':''}</div>
+          <div class="day-bar-wrap">
+            <div class="day-bar-fill" style="width:${pct}%;background:${color};"></div>
+            <div class="day-bar-obj" style="left:${objPct}%;"></div>
+          </div>
+        </div>
+        <span class="day-bar-val" style="color:${color};font-weight:${over?'700':'400'}">${total?total+' kcal':'—'}</span>
+      </div>`;
     });
-    html+=`<div class="prot-grid">
-      <svg class="prot-donut" width="100" height="100" viewBox="0 0 100 100">${slices}</svg>
-      <div class="prot-legend">`;
-    Object.entries(protCount).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
-      html+=`<div class="prot-legend-row">
-        <div class="prot-dot" style="background:${PROT_C[k]};"></div>
-        <span>${protLabels[k]}</span>
-        <span class="prot-pct">${Math.round(v/protTotal*100)}%</span>
+    html+=`<div class="an-note" style="margin-top:8px;">🟢 Por debajo del objetivo · 🟡 Hasta +150 kcal · 🔴 Más de +150 kcal · Línea = objetivo ${OBJETIVO} kcal</div>`;
+  }
+  html+=`</div></div>`;
+
+  // ── BLOQUE 2: ¿Dónde está el problema? ──
+  const diasProblema=dayData.filter(x=>x.total&&x.total>tdee).sort((a,b)=>b.total-a.total);
+  if(diasProblema.length){
+    html+=`<div class="an-card full" style="margin-bottom:14px;">
+      <div class="an-hdr"><span class="an-title">⚠️ Días por encima del TDEE</span><span class="an-sub">${diasProblema.length} día${diasProblema.length>1?'s':''} sin déficit (TDEE: ${tdee} kcal)</span></div>
+      <div class="an-body">`;
+    diasProblema.forEach(({day,rec,cenaKcal,tupperKcal,total})=>{
+      const exc=total-tdee;
+      const culpable=cenaKcal&&cenaKcal>700?'La cena es pesada':tupperKcal&&tupperKcal>450?'El tupper es alto':'Combinación cena+tupper';
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);">
+        <span style="font-weight:700;width:28px;">${DAYS_F_SHORT[day]}</span>
+        <span style="flex:1;font-size:12px;color:var(--muted);">${culpable}${rec?' · '+rec.name.split(' ').slice(0,3).join(' '):''}</span>
+        <span style="font-size:13px;font-weight:700;color:#e05050;">+${exc} kcal</span>
       </div>`;
     });
     html+=`</div></div>`;
-  } else {
-    html+=`<div class="an-empty">Sin recetas todavía.</div>`;
   }
-  html+=`</div></div>
 
-  <div class="an-card">
-    <div class="an-hdr"><span class="an-title">🛒 Precio medio por supermercado</span><span class="an-sub">Media por ingrediente con precio introducido</span></div>
-    <div class="an-body">`;
-  if(superHasData){
-    SUPERS.slice().sort((a,b)=>(superAvgs[a]||999)-(superAvgs[b]||999)).forEach(s=>{
-      if(superCounts[s]===0)return;
-      const isWinner=superAvgs[s]===minAvg;
-      html+=`<div class="super-an-row">
-        <div class="super-logo" style="background:${SUPER_COLORS[s]};width:10px;height:10px;border-radius:50%;flex-shrink:0;"></div>
-        <span class="super-an-name">${SUPER_NAMES[s]}</span>
-        <span style="font-size:10px;color:var(--muted);">${superCounts[s]} ingredientes</span>
-        <span class="super-an-price" style="color:${isWinner?'var(--green)':'var(--ink)'};">${superAvgs[s].toFixed(2)} €/prod</span>
-        ${isWinner?'<span class="super-an-badge">✓ Mejor</span>':''}
-      </div>`;
-    });
-    html+=`<div class="an-note">Media calculada solo sobre los ingredientes con precio introducido en cada supermercado. Cuantos más precios introduzcas, más fiable la comparativa.</div>`;
+  // ── BLOQUE 3: Tendencia del mes ──
+  html+=`<div class="an-card full" style="margin-bottom:14px;">
+    <div class="an-hdr"><span class="an-title">📈 Tendencia del mes</span><span class="an-sub">Últimas 4 semanas · déficit acumulado vs peso real</span></div>
+    <div class="an-body" id="anTrendBody">`;
+
+  const wRange=[-3,-2,-1,0].map(off=>anWo+off);
+  const trendRows=wRange.map(w=>{
+    const wMon=getMon(w);const wKw=getKW(wMon);const wk=`${wKw}_${wMon.getFullYear()}`;
+    const wRecs=recipes.filter(r=>r.wo===w);
+    const wDay=[];
+    for(let d=0;d<7;d++){
+      const r=wRecs.find(x=>x.day===d);const lk=lunchKey(w,d);const l=lunches[lk]||null;
+      const ck=r?getKcal(r.name)||null:null;const tk=estimateLunchKcal(l);
+      const tot=(ck||tk)?FIJO+(tk||0)+(ck||0)+(cheatDays[`${w}_${d}`]||0):null;
+      wDay.push(tot);
+    }
+    const wKnown=wDay.filter(v=>v!==null);
+    const wMedia=wKnown.length?Math.round(wKnown.reduce((s,v)=>s+v,0)/wKnown.length):null;
+    const wDef=wMedia!==null?OBJETIVO-wMedia:null;
+    const wGrams=wDef!==null?Math.round(wDef*7/7700*1000):null;
+    const wLog=weightLog[wk]||{};
+    const wkKey=`${wKw}_${wMon.getFullYear()}`;
+    const isCycle=cycleWeeks.has(wkKey);
+    const wSat=getDayDate(w,5);
+    return {w,wKw,wMon,wSat,wMedia,wDef,wGrams,pesoReal:wLog.weight||null,dias:wKnown.length,wkKey,isCycle};
+  });
+
+  const hasAnyTrend=trendRows.some(r=>r.wMedia||r.pesoReal);
+  if(!hasAnyTrend){
+    html+=`<div class="an-empty">Acumula datos de varias semanas para ver la tendencia.</div>`;
   } else {
-    html+=`<div class="an-empty">Introduce precios en la pestaña Precios para ver la comparativa.</div>`;
-  }
-  html+=`</div></div></div>`;
-
-  // ── MACRO ANALYSIS ──────────────────────────────────────
-  // Targets for Nata: 1550 kcal/day, 80kg, sedentary, deficit goal
-  // Dinner targets (dinner = ~40% of total day):
-  // Total day targets: Prot ~90g, HC ~160g, Fat ~50g, Fibra >25g
-  // Dinner portion (~40%): Prot ~36g, HC ~64g, Fat ~20g, Fibra ~10g
-  const MACRO_TARGETS={prot:{label:'Proteína',unit:'g',target:36,color:'#5a9ec4',totalTarget:90},
-    hc:{label:'Hidratos',unit:'g',target:64,color:'#d4bc4a',totalTarget:160},
-    fett:{label:'Grasa',unit:'g',target:20,color:'#c48050',totalTarget:50},
-    fibra:{label:'Fibra',unit:'g',target:10,color:'#6db870',totalTarget:25}};
-  const MACRO_FIXED={prot:19,hc:84,fett:8,fibra:5}; // desayuno+cafés+choco
-
-  // Calc weekly macro averages from dinners with data
-  const macroRecs=weekRecs.filter(r=>{const d=recipeData[r.name];return d&&(d.prot||d.hc||d.fett);});
-  const macroAvg={};
-  if(macroRecs.length){
-    ['prot','hc','fett','fibra'].forEach(m=>{
-      const vals=macroRecs.map(r=>recipeData[r.name]?.[m]).filter(v=>v!=null);
-      macroAvg[m]=vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:null;
+    const predPesos=trendRows.map(()=>null);
+    trendRows.forEach((r,i)=>{if(r.pesoReal!=null)predPesos[i]=r.pesoReal;});
+    const lastIdx=trendRows.length-1;
+    if(predPesos[lastIdx]==null)predPesos[lastIdx]=userProfile.peso;
+    for(let i=lastIdx-1;i>=0;i--){
+      if(predPesos[i]!=null)continue;
+      const next=predPesos[i+1];
+      const wg=trendRows[i].wGrams;
+      predPesos[i]=next!=null&&wg!=null?Math.round((next+wg/1000)*10)/10:next;
+    }
+    for(let i=lastIdx+1;i<trendRows.length;i++){
+      const base=trendRows[i-1].pesoReal??predPesos[i-1];
+      const wg=trendRows[i-1].wGrams;
+      predPesos[i]=wg!=null?Math.round((base-wg/1000)*10)/10:base;
+    }
+    html+=`<table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="color:var(--muted);font-size:11px;font-weight:600;">
+        <th style="text-align:left;padding:4px 0;">Semana</th>
+        <th style="text-align:right;padding:4px 6px;">Media kcal</th>
+        <th style="text-align:right;padding:4px 6px;">vs Objetivo</th>
+        <th style="text-align:right;padding:4px 6px;">Predicción</th>
+        <th style="text-align:right;padding:4px 6px;">Sábado · Peso real</th>
+        <th style="text-align:right;padding:4px 6px;">Pasos/día</th>
+        <th style="padding:4px 4px;"></th>
+      </tr></thead><tbody>`;
+    trendRows.forEach(({w,wKw,wMon,wSat,wMedia,wDef,wGrams,pesoReal,isCycle,wkKey},i)=>{
+      const isNow=w===anWo;
+      const predPeso=predPesos[i];
+      const wExceso=wMedia!==null?wMedia-OBJETIVO:null;
+      const excColor=wExceso===null?'var(--muted)':wExceso<0?'#2e6b30':wExceso<=150?'#e0a830':'#e05050';
+      const excStr=wExceso===null?'—':wExceso<0?`${Math.abs(Math.round(wExceso))} kcal de sobra`:`+${Math.round(wExceso)} kcal de exceso`;
+      const cycleColor='#9b59b6';
+      const wSteps=(weightLog[wkKey]||{}).steps||null;
+      html+=`<tr style="border-top:1px solid var(--border-light);${isNow?'font-weight:600;background:var(--light);':''}${isCycle?'background:#fdf6ff;':''}">
+        <td style="padding:7px 0;">S${wKw} <span style="font-weight:400;color:var(--muted);font-size:10px;">${fmt(wMon)}</span></td>
+        <td style="text-align:right;padding:7px 6px;">${wMedia?Math.round(wMedia)+' kcal':'—'}</td>
+        <td style="text-align:right;padding:7px 6px;font-size:11px;color:${excColor};">${excStr}</td>
+        <td style="text-align:right;padding:7px 6px;color:#5a9ec4;">${predPeso?predPeso+' kg':'—'}</td>
+        <td style="text-align:right;padding:7px 6px;">
+          <span style="font-size:10px;color:var(--muted);margin-right:4px;">${fmt(wSat)}</span>
+          <input type="number" step="0.1" placeholder="—" value="${pesoReal||''}"
+            style="width:60px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:${pesoReal?'700':'400'};color:${pesoReal?(isCycle?cycleColor:'var(--ink)'):'var(--muted)'};"
+            onchange="saveWeight('${wkKey}','weight',this.value);renderAnalisis()"/>
+          ${pesoReal&&predPeso?`<span style="font-size:10px;color:${pesoReal<predPeso?'#2e6b30':'#e05050'};margin-left:2px;">${pesoReal<predPeso?'▼':'▲'}${Math.abs(pesoReal-predPeso).toFixed(1)}</span>`:''}
+        </td>
+        <td style="text-align:right;padding:7px 6px;">
+          <input type="number" placeholder="—" value="${wSteps||''}"
+            style="width:65px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:${wSteps?'700':'400'};"
+            onchange="saveWeight('${wkKey}','steps',this.value);renderAnalisis()"/>
+          ${wSteps?'<span style="font-size:10px;color:var(--muted);margin-left:2px;">🚶</span>':''}
+        </td>
+        <td style="padding:7px 4px;text-align:center;">
+          <button onclick="toggleCycle('${wkKey}')" title="${isCycle?'Quitar ciclo':'Marcar semana con ciclo'}"
+            style="background:${isCycle?'#9b59b622':'transparent'};border:1px solid ${isCycle?'#9b59b6':'var(--border)'};border-radius:6px;padding:2px 6px;cursor:pointer;font-size:13px;line-height:1;">💧</button>
+        </td>
+      </tr>`;
     });
-  }
-  const hasMacros=Object.values(macroAvg).some(v=>v!==undefined&&v!==null);
-
-  html+=`<div class="an-card full" style="margin-top:14px;">
-    <div class="an-hdr">
-      <span class="an-title">🔬 Macronutrientes semanales</span>
-      <span class="an-sub">Media de las cenas con datos · ${macroRecs.length} recetas</span>
-    </div>
-    <div class="an-body">`;
-
-  if(!hasMacros){
-    html+=`<div class="an-empty">Importa las recetas compactas con la barra de nutrientes para ver el análisis de macros.</div>`;
-  } else {
-    html+=`<div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Media por cena + estimación del día completo (desayuno + tupper + cena)</div>`;
-    ['prot','hc','fett','fibra'].forEach(m=>{
-      const cfg=MACRO_TARGETS[m];
-      const dinnerVal=macroAvg[m];
-      if(dinnerVal===null||dinnerVal===undefined)return;
-      const totalEst=Math.round(dinnerVal+(MACRO_FIXED[m]||0));
-      const pct=Math.min((dinnerVal/cfg.target)*100,130);
-      const ratio=totalEst/cfg.totalTarget;
-      const badge=ratio<0.8?['low','Algo bajo']:ratio>1.25?['high','Alto']:['ok','✓ Bien'];
-      html+=`<div class="macro-row">
-        <span class="macro-lbl">${cfg.label}</span>
-        <div class="macro-bar-wrap">
-          <div class="macro-bar-fill" style="width:${pct}%;background:${cfg.color};opacity:.75;"></div>
-          <div class="macro-bar-target" style="left:${Math.min((cfg.target/cfg.target)*100,100)}%;"></div>
-        </div>
-        <span class="macro-val" style="color:var(--muted);">${dinnerVal.toFixed(0)}${cfg.unit} cena · <strong>${totalEst}${cfg.unit}</strong> día</span>
-        <span class="macro-badge ${badge[0]}">${badge[1]}</span>
-      </div>`;
-    });
-    html+=`<div class="an-note">Objetivos día completo: Proteína ~${MACRO_TARGETS.prot.totalTarget}g · Hidratos ~${MACRO_TARGETS.hc.totalTarget}g · Grasa ~${MACRO_TARGETS.fett.totalTarget}g · Fibra >${MACRO_TARGETS.fibra.totalTarget}g. 
-    Basado en 1.550 kcal/día con déficit moderado para pérdida de peso. La estimación del día incluye desayuno fijo y tupper estimado.</div>`;
+    html+=`</tbody></table>
+    <div class="an-note" style="margin-top:8px;">Pesaje los sábados · Pasos = promedio semanal de iPhone Salud · 💧 semana con ciclo · ▼ mejor de lo predicho · ▲ peor</div>`;
   }
   html+=`</div></div>`;
 
   document.getElementById('anContent').innerHTML=html;
-  renderWeight();
+  document.getElementById('anWeight').innerHTML='';
+  renderWeightChart();
 }
 
-function weightKey(wo){
-  const mon=getMon(wo);
-  return `${getKW(mon)}_${mon.getFullYear()}`;
-}
+function weightKey(wo){const mon=getMon(wo);return `${getKW(mon)}_${mon.getFullYear()}`;}
 
 function saveWeight(wk,field,val){
   if(!weightLog[wk])weightLog[wk]={};
-  const num=parseFloat(val.replace(',','.'));
+  const num=parseFloat(String(val).replace(',','.'));
   if(!isNaN(num)&&num>0)weightLog[wk][field]=num;
   else delete weightLog[wk][field];
   if(!weightLog[wk].weight&&!weightLog[wk].steps)delete weightLog[wk];
-  save();renderWeight();
+  save();
 }
 
-function renderWeight(){
-  // Gather all weeks that have recipes or weight data
-  const wos=[...new Set([...recipes.map(r=>r.wo),...Object.keys(weightLog).map(k=>{
-    // reverse lookup: find wo from kw_year key
-    for(let w=-2;w<10;w++){const mon=getMon(w);if(`${getKW(mon)}_${mon.getFullYear()}`===k)return w;}
-    return null;
-  }).filter(w=>w!==null)])].sort((a,b)=>a-b);
+function toggleCycle(wk){
+  if(cycleWeeks.has(wk))cycleWeeks.delete(wk);
+  else cycleWeeks.add(wk);
+  save();renderAnalisis();
+}
 
+function renderWeightChart(){
+  // Recopilar todas las semanas con recetas o peso registrado
+  const allWos=new Set(recipes.map(r=>r.wo));
+  Object.keys(weightLog).forEach(wk=>{
+    for(let w=-4;w<20;w++){const mon=getMon(w);if(`${getKW(mon)}_${mon.getFullYear()}`===wk){allWos.add(w);break;}}
+  });
+  const wos=[...allWos].sort((a,b)=>a-b);
   if(!wos.length){document.getElementById('anWeight').innerHTML='';return;}
 
-  // Calc weekly deficit from kcal data
-  const KCAL_PER_KG=7700;
-  const PESO_INICIO=80;
-
+  // Datos por semana
   const weekData=wos.map(w=>{
-    const mon=getMon(w);const kw=getKW(mon);const yr=mon.getFullYear();
-    const wk=`${kw}_${yr}`;
+    const mon=getMon(w);const kw=getKW(mon);const wk=`${kw}_${mon.getFullYear()}`;
     const wRecs=recipes.filter(r=>r.wo===w);
-    // Avg daily deficit for week
-    const dayDeficits=[];
+    const dayTotals=[];
     for(let d=0;d<7;d++){
-      const rec=wRecs.find(r=>r.day===d);
-      const lkey=lunchKey(w,d);
-      const l=lunches[lkey]||null;
-      const cenaKcal=rec?getKcal(rec.name)||null:null;
-      const tupperKcal=estimateLunchKcal(l);
-      if(cenaKcal&&tupperKcal){
-        const total=FIJO+tupperKcal+cenaKcal;
-        dayDeficits.push(OBJETIVO-total); // positive = deficit, negative = surplus
-      }
+      const r=wRecs.find(x=>x.day===d);const l=lunches[lunchKey(w,d)]||null;
+      const ck=r?getKcal(r.name)||null:null;const tk=estimateLunchKcal(l);
+      const tot=(ck||tk)?FIJO+(tk||0)+(ck||0)+(cheatDays[`${w}_${d}`]||0):null;
+      if(tot)dayTotals.push(tot);
     }
-    const avgDeficit=dayDeficits.length?dayDeficits.reduce((s,v)=>s+v,0)/dayDeficits.length:null;
-    const weekDeficit=avgDeficit!==null?Math.round(avgDeficit*7):null;
-    const wl=weightLog[wk]||{};
-    return{w,kw,yr,wk,mon,avgDeficit,weekDeficit,weight:wl.weight||null,steps:wl.steps||null};
+    const media=dayTotals.length?Math.round(dayTotals.reduce((s,v)=>s+v,0)/dayTotals.length):null;
+    const wDef=media!=null?OBJETIVO-media:null; // positivo=pérdida
+    const wGrams=wDef!=null?Math.round(wDef*7/7700*1000):null;
+    const wLog=weightLog[wk]||{};
+    return{w,kw,mon,media,wDef,wGrams,pesoReal:wLog.weight||null,isCycle:cycleWeeks.has(wk)};
   });
 
-  // Build predicted weight line
-  let predWeight=null;
-  const withWeight=weekData.filter(x=>x.weight!==null);
-  if(withWeight.length>0){
-    // anchor on first real weight
-    predWeight=withWeight[0].weight;
-  } else {
-    predWeight=PESO_INICIO;
+  // Predicción: anclar al más reciente, proyectar hacia atrás
+  const predPesos=weekData.map(()=>null);
+  weekData.forEach((d,i)=>{if(d.pesoReal!=null)predPesos[i]=d.pesoReal;});
+  const lastIdx=weekData.length-1;
+  if(predPesos[lastIdx]==null)predPesos[lastIdx]=userProfile.peso;
+  for(let i=lastIdx-1;i>=0;i--){
+    if(predPesos[i]!=null)continue;
+    const next=predPesos[i+1];
+    const wg=weekData[i].wGrams;
+    predPesos[i]=next!=null&&wg!=null?Math.round((next+wg/1000)*10)/10:next;
   }
 
-  const predictions=[];
-  let running=predWeight;
-  weekData.forEach((wd,i)=>{
-    if(i===0&&withWeight.length>0)running=withWeight[0].weight;
-    predictions.push(running);
-    if(wd.weekDeficit!==null)running=Math.max(40,running-(wd.weekDeficit/KCAL_PER_KG));
-  });
-
-  // SVG chart
-  const W=860,H=180,PAD={t:16,r:20,b:30,l:40};
-  const chartW=W-PAD.l-PAD.r,chartH=H-PAD.t-PAD.b;
-  const allWeights=[...predictions.filter(Boolean),...weekData.map(x=>x.weight).filter(Boolean)];
-  const minW=Math.floor(Math.min(...allWeights)-1);
-  const maxW=Math.ceil(Math.max(...allWeights)+1);
+  // SVG
+  const allW=[...predPesos.filter(v=>v!=null),...weekData.map(d=>d.pesoReal).filter(v=>v!=null)];
+  if(!allW.length){document.getElementById('anWeight').innerHTML='';return;}
+  const minW=Math.floor(Math.min(...allW)-0.5);
+  const maxW=Math.ceil(Math.max(...allW)+0.5);
   const n=weekData.length;
-  const xScale=i=>PAD.l+(i/(Math.max(n-1,1)))*chartW;
-  const yScale=v=>PAD.t+((maxW-v)/(maxW-minW))*chartH;
+  const W=860,H=200,PAD={t:20,r:20,b:32,l:44};
+  const cW=W-PAD.l-PAD.r,cH=H-PAD.t-PAD.b;
+  const xS=i=>PAD.l+(n<2?cW/2:i/(n-1)*cW);
+  const yS=v=>PAD.t+((maxW-v)/(maxW-minW||1))*cH;
 
-  // grid lines
-  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">`;
-  // y grid
-  for(let kg=Math.ceil(minW);kg<=maxW;kg++){
-    const y=yScale(kg);
-    svg+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#eee" stroke-width="1"/>
-          <text x="${PAD.l-4}" y="${y+4}" font-size="9" fill="#aaa" text-anchor="end">${kg}</text>`;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;display:block;">`;
+  // Grid
+  for(let kg=minW;kg<=maxW;kg+=0.5){
+    const y=yS(kg);const isInt=Number.isInteger(kg);
+    svg+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="${isInt?'#e0ddd8':'#f0ede8'}" stroke-width="${isInt?1:0.5}"/>`;
+    if(isInt)svg+=`<text x="${PAD.l-5}" y="${y+4}" font-size="9" fill="#aaa" text-anchor="end">${kg}</text>`;
   }
+  // Línea objetivo TDEE (sin pérdida = peso estable)
+  const objY=yS(userProfile.peso);
+  svg+=`<line x1="${PAD.l}" y1="${objY}" x2="${W-PAD.r}" y2="${objY}" stroke="#d4bc4a" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>`;
   // x labels
-  weekData.forEach((wd,i)=>{
-    const x=xScale(i);
-    svg+=`<text x="${x}" y="${H-6}" font-size="9" fill="#aaa" text-anchor="middle">S${wd.kw}</text>`;
+  weekData.forEach((d,i)=>{
+    if(n<=12||i%2===0)svg+=`<text x="${xS(i)}" y="${H-8}" font-size="9" fill="#aaa" text-anchor="middle">S${d.kw}</text>`;
   });
-  // predicted line (dashed)
-  const predPath=predictions.map((v,i)=>`${i===0?'M':'L'}${xScale(i)},${yScale(v)}`).join(' ');
-  svg+=`<path d="${predPath}" fill="none" stroke="#5a9ec4" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  // real weight line
-  const realPoints=weekData.map((wd,i)=>wd.weight!==null?{x:xScale(i),y:yScale(wd.weight),v:wd.weight}:null).filter(Boolean);
-  if(realPoints.length>1){
-    const realPath=realPoints.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
-    svg+=`<path d="${realPath}" fill="none" stroke="#2e6b30" stroke-width="2"/>`;
-  }
-  // dots real
-  realPoints.forEach(p=>{
-    svg+=`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#2e6b30"/>
-          <text x="${p.x}" y="${p.y-8}" font-size="9" fill="#2e6b30" text-anchor="middle">${p.v.toString().replace('.',',')} kg</text>`;
+  // Línea predicción (azul punteado)
+  const predPoints=predPesos.map((v,i)=>v!=null?{x:xS(i),y:yS(v)}:null);
+  const predSegs=[];let seg=[];
+  predPoints.forEach(p=>{if(p){seg.push(p);}else{if(seg.length)predSegs.push(seg);seg=[];}});
+  if(seg.length)predSegs.push(seg);
+  predSegs.forEach(s=>{
+    if(s.length>0)svg+=`<path d="M${s.map(p=>`${p.x},${p.y}`).join('L')}" fill="none" stroke="#5a9ec4" stroke-width="1.5" stroke-dasharray="5 3"/>`;
   });
-  // legend
-  svg+=`<line x1="${W-180}" y1="12" x2="${W-160}" y2="12" stroke="#5a9ec4" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <text x="${W-155}" y="16" font-size="9" fill="#5a9ec4">Predicción</text>
-        <line x1="${W-100}" y1="12" x2="${W-80}" y2="12" stroke="#2e6b30" stroke-width="2"/>
-        <circle cx="${W-88}" cy="12" r="3" fill="#2e6b30"/>
-        <text x="${W-75}" y="16" font-size="9" fill="#2e6b30">Real</text>`;
+  // Línea peso real (verde), puntos de ciclo en lila
+  const realPoints=weekData.map((d,i)=>d.pesoReal!=null?{x:xS(i),y:yS(d.pesoReal),v:d.pesoReal,kw:d.kw,isCycle:d.isCycle}:null).filter(Boolean);
+  const normalReal=realPoints.filter(p=>!p.isCycle);
+  const cycleReal=realPoints.filter(p=>p.isCycle);
+  if(realPoints.length>1){svg+=`<path d="M${realPoints.map(p=>`${p.x},${p.y}`).join('L')}" fill="none" stroke="#2e6b30" stroke-width="2"/>`;}
+  normalReal.forEach(p=>{
+    svg+=`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#2e6b30" stroke="white" stroke-width="1.5"/>`;
+    svg+=`<text x="${p.x}" y="${p.y-9}" font-size="9" fill="#2e6b30" text-anchor="middle" font-weight="600">${p.v}</text>`;
+  });
+  cycleReal.forEach(p=>{
+    svg+=`<circle cx="${p.x}" cy="${p.y}" r="5" fill="#9b59b6" stroke="white" stroke-width="1.5"/>`;
+    svg+=`<text x="${p.x}" y="${p.y-10}" font-size="9" fill="#9b59b6" text-anchor="middle" font-weight="600">${p.v} 💧</text>`;
+  });
+  // Leyenda
+  svg+=`<line x1="${W-240}" y1="12" x2="${W-222}" y2="12" stroke="#5a9ec4" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <text x="${W-217}" y="16" font-size="9" fill="#5a9ec4">Predicción</text>
+        <line x1="${W-155}" y1="12" x2="${W-137}" y2="12" stroke="#2e6b30" stroke-width="2"/>
+        <circle cx="${W-146}" cy="12" r="3" fill="#2e6b30"/>
+        <text x="${W-132}" y="16" font-size="9" fill="#2e6b30">Peso real</text>
+        <circle cx="${W-65}" cy="12" r="4" fill="#9b59b6"/>
+        <text x="${W-57}" y="16" font-size="9" fill="#9b59b6">💧 Ciclo</text>`;
   svg+=`</svg>`;
-
-  // Table
-  let table=`<table class="wt-table">
-    <tr><th>Semana</th><th>Déficit est.</th><th>Peso predicho</th><th>Peso real (kg)</th><th>Pasos/día</th><th>Diferencia</th></tr>`;
-  weekData.forEach((wd,i)=>{
-    const pred=predictions[i];
-    const diff=wd.weight&&pred?wd.weight-pred:null;
-    const diffStr=diff!==null?`<span class="wt-diff ${diff>0?'pos':'neg'}">${diff>0?'+':''}${diff.toFixed(1)} kg</span>`:'—';
-    table+=`<tr>
-      <td><strong>S${wd.kw}</strong> <span style="font-size:10px;color:var(--muted);">${fmt(wd.mon)}</span></td>
-      <td style="font-size:11px;color:var(--muted);">${wd.weekDeficit!==null?`${wd.weekDeficit>0?'-':'+'}${Math.abs(wd.weekDeficit)} kcal`:'—'}</td>
-      <td style="font-size:12px;color:#5a9ec4;font-weight:500;">${pred.toFixed(1)} kg</td>
-      <td><input class="wt-input" type="text" placeholder="—" value="${wd.weight||''}"
-        onchange="saveWeight('${wd.wk}','weight',this.value)" /></td>
-      <td><input class="wt-input" type="text" placeholder="—" value="${wd.steps||''}"
-        onchange="saveWeight('${wd.wk}','steps',this.value)" /></td>
-      <td>${diffStr}</td>
-    </tr>`;
-  });
-  table+=`</table>
-  <div class="an-note">La predicción asume 7.700 kcal = 1 kg de grasa. Las semanas sin datos de kcal no ajustan la predicción.</div>`;
 
   document.getElementById('anWeight').innerHTML=`
     <div class="an-card full" style="margin-top:14px;">
       <div class="an-hdr">
-        <span class="an-title">⚖️ Seguimiento de peso</span>
-        <span class="an-sub">Introduce tu peso cada semana para ver la evolución real vs predicha</span>
+        <span class="an-title">⚖️ Evolución del peso</span>
+        <span class="an-sub">Predicción basada en déficit · Peso real introducido</span>
       </div>
-      <div class="an-body">
-        ${svg}
-        ${table}
+      <div class="an-body">${svg}
+        <div class="an-note" style="margin-top:6px;">Introduce el peso real en la tabla de arriba cada semana · Línea amarilla = tu peso inicial de perfil (${userProfile.peso} kg)</div>
       </div>
     </div>`;
 }
