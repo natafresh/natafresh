@@ -4605,9 +4605,9 @@ function renderAnalisis(){
   const known=dayData.filter(x=>x.total!==null);
   const media=known.length?Math.round(known.reduce((s,x)=>s+x.total,0)/known.length):null;
   const exceso=media!==null?media-OBJETIVO:null;
-  const excesoTDEE=media!==null?media-tdee:null; // respecto al TDEE (el techo real)
-  const gPerSemana=exceso!==null?Math.round(Math.abs(exceso)*7/7700*1000):null;
-  const perdiendo=exceso!==null&&exceso<0;
+  const excesoTDEE=media!==null?media-tdee:null;
+  const gPerSemana=excesoTDEE!==null?Math.round(Math.abs(excesoTDEE)*7/7700*1000):null;
+  const perdiendo=excesoTDEE!==null&&excesoTDEE<0;
   const maxKcal=Math.max(tdee+300,...dayData.filter(x=>x.total).map(x=>x.total));
 
   let html='';
