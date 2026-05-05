@@ -1818,199 +1818,78 @@ function closeLunchModal(){document.getElementById('lmodalOv').classList.remove(
 
 const TUPPER_DB={
   huhn:[
-    {name:'Lentejas con zanahoria, apio y comino',kcal:320,prep_time:'20 min',
-     ings:[{name:'Lentejas pardinas',qty:'80g'},{name:'Zanahoria',qty:'1 ud'},{name:'Apio',qty:'1 rama'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Comino',qty:'1 TL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Cocer lentejas',text:'Cuece las lentejas con la zanahoria y el apio troceados en agua con sal durante 18 min.'},{title:'Sofrito',text:'Sofríe la cebolla con aceite, comino, sal y pimienta. Mezcla con las lentejas y deja enfriar.'}]},
-    {name:'Ensalada de pasta fría con atún, olivas y tomate',kcal:360,prep_time:'15 min',
-     ings:[{name:'Pasta (fusilli o penne)',qty:'80g'},{name:'Atún al natural',qty:'1 lata'},{name:'Tomate cherry',qty:'100g'},{name:'Olivas negras',qty:'8 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer pasta',text:'Cuece la pasta en agua con sal según el paquete. Escurre y enfría bajo el grifo.'},{title:'Montar ensalada',text:'Mezcla la pasta con el atún escurrido, los cherry cortados por la mitad, las olivas, aceite, vinagre y sal.'}]},
-    {name:'Tortilla de espinacas con ensalada verde',kcal:290,prep_time:'10 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Tomate',qty:'1 ud'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Hacer tortilla',text:'Saltea las espinacas 1 min. Bate los huevos con sal, añade las espinacas y cuaja en sartén a fuego medio.'},{title:'Servir',text:'Acompaña con la lechuga y el tomate aliñados con aceite y sal.'}]},
-    {name:'Salmón ahumado con rúcula y tostada integral',kcal:280,prep_time:'5 min',
-     ings:[{name:'Salmón ahumado',qty:'80g'},{name:'Rúcula',qty:'1 puñado'},{name:'Pan integral',qty:'2 rebanadas'},{name:'Queso crema light',qty:'1 EL'},{name:'Limón',qty:'unas gotas'},{name:'Pimienta negra',qty:'al gusto'}],
-     steps:[{title:'Montar',text:'Unta las tostadas con queso crema. Coloca el salmón encima, la rúcula al lado y unas gotas de limón y pimienta.'}]},
-    {name:'Ensalada de alubias blancas con cebolla morada y pimiento',kcal:300,prep_time:'10 min',
-     ings:[{name:'Alubias blancas cocidas',qty:'200g'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Perejil fresco',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre de manzana',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Escurre y aclara las alubias. Pica el pimiento y la cebolla en brunoise. Mezcla todo con el perejil, aceite, vinagre y sal.'}]},
-    {name:'Frittata de verduras con queso feta',kcal:310,prep_time:'15 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Calabacín',qty:'½ ud'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Queso feta',qty:'40g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Saltear verduras',text:'Corta el calabacín y el pimiento en dados pequeños. Saltea 3 min con aceite y sal.'},{title:'Cuajar',text:'Bate los huevos, añade las verduras y el feta desmenuzado. Vierte en sartén y cuaja 5-7 min a fuego bajo con tapa.'}]},
-    {name:'Bowl de arroz basmati con edamame y salsa de soja',kcal:380,prep_time:'20 min',
-     ings:[{name:'Arroz basmati',qty:'70g'},{name:'Edamame (congelado)',qty:'100g'},{name:'Zanahoria',qty:'1 ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sésamo',qty:'1 TL'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz según indicaciones. Hierve el edamame 3 min.'},{title:'Montar bowl',text:'Coloca el arroz en el tupper, añade el edamame y la zanahoria rallada. Aliña con soja y aceite de sésamo. Espolvorea sésamo.'}]},
-    {name:'Ensalada de garbanzos con tomate cherry, pepino y vinagreta de limón',kcal:310,prep_time:'10 min',
-     ings:[{name:'Garbanzos cocidos',qty:'200g'},{name:'Tomate cherry',qty:'80g'},{name:'Pepino',qty:'½ ud'},{name:'Zumo de limón',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Menta fresca',qty:'unas hojas'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Escurre los garbanzos. Corta los cherry por la mitad y el pepino en dados. Mezcla con el zumo de limón, aceite, menta y sal.'}]},
-    {name:'Huevo duro con ensalada de judías verdes y tomate',kcal:260,prep_time:'15 min',
-     ings:[{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'150g'},{name:'Tomate',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min en agua con sal. Enfría todo.'},{title:'Montar',text:'Coloca las judías y el tomate en dados en el tupper. Añade los huevos pelados y cortados. Aliña con aceite, vinagre y sal.'}]},
-    {name:'Pasta fría con pesto, cherry y mozzarella',kcal:420,prep_time:'15 min',
-     ings:[{name:'Pasta (fusilli)',qty:'80g'},{name:'Pesto',qty:'1 EL'},{name:'Tomate cherry',qty:'80g'},{name:'Mozzarella fresca',qty:'50g'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer pasta',text:'Cuece la pasta según el paquete. Escurre y enfría bajo el grifo.'},{title:'Montar',text:'Mezcla la pasta con el pesto, los cherry cortados y la mozzarella en dados.'}]},
+    {name:'Lentejas con zanahoria y comino',kcal:330,prep_time:'20 min',ings:[{name:'Lentejas pardinas',qty:'60g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Comino',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer lentejas',text:'Cuece las lentejas con la zanahoria en trozos en agua con sal 18 min.'},{title:'Sofrito',text:'Sofríe la cebolla con aceite y comino 3 min. Mezcla con las lentejas. Ajusta sal.'}]},
+    {name:'Ensalada niçoise con atún y huevo',kcal:320,prep_time:'15 min',ings:[{name:'Atún al natural',qty:'100g'},{name:'Huevo',qty:'1 ud'},{name:'Judías verdes',qty:'100g'},{name:'Olivas negras',qty:'20g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer',text:'Cuece el huevo 10 min y las judías 5 min en agua con sal. Enfría.'},{title:'Montar',text:'Coloca el atún, huevo en cuartos, judías y olivas. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Tortilla de champiñones y pimiento',kcal:290,prep_time:'12 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Champiñones',qty:'150g'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Ajo',qty:'1 diente'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Saltear',text:'Lamina los champiñones y corta el pimiento en dados. Saltea con ajo y aceite 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las verduras y cuaja 4 min a fuego medio.'}]},
+    {name:'Salmón al horno con judías verdes',kcal:350,prep_time:'20 min',ings:[{name:'Lomo de salmón',qty:'120g'},{name:'Judías verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Hornear',text:'Coloca el salmón en bandeja con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'},{title:'Judías',text:'Cuece las judías 5 min en agua con sal. Escurre y sirve junto al salmón.'}]},
+    {name:'Pasta fría con atún y tomate cherry',kcal:380,prep_time:'15 min',ings:[{name:'Pasta',qty:'55g'},{name:'Atún al natural',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Orégano',qty:'½ TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer pasta',text:'Cuece la pasta en agua con sal. Escurre y enfría bajo el grifo.'},{title:'Montar',text:'Mezcla la pasta con el atún escurrido, los cherry cortados, aceite, orégano y sal.'}]},
+    {name:'Frittata de calabacín y feta',kcal:310,prep_time:'15 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Calabacín',qty:'1 ud'},{name:'Queso feta',qty:'30g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Saltear',text:'Corta el calabacín en dados y saltea con aceite y sal 3 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade el calabacín y el feta desmenuzado. Cuaja a fuego bajo 6 min con tapa.'}]},
+    {name:'Ensalada de garbanzos con pepino y limón',kcal:340,prep_time:'10 min',ings:[{name:'Garbanzos cocidos',qty:'150g'},{name:'Pepino',qty:'½ ud'},{name:'Tomate cherry',qty:'80g'},{name:'Zumo de limón',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Escurre los garbanzos. Corta el pepino en dados y los cherry por la mitad. Mezcla todo con zumo de limón, aceite y sal.'}]},
+    {name:'Bowl de arroz con salmón y edamame',kcal:400,prep_time:'20 min',ings:[{name:'Arroz',qty:'45g'},{name:'Lomo de salmón',qty:'80g'},{name:'Edamame congelado',qty:'60g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer',text:'Cuece el arroz y el edamame por separado.'},{title:'Salmón',text:'Cocina el salmón a la plancha 3 min por lado. Desmenuza. Sirve sobre el arroz con edamame, soja y sésamo.'}]},
+    {name:'Wrap de pavo con aguacate y tomate',kcal:360,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'½ ud'},{name:'Zumo de limón',qty:'unas gotas'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pavo y el tomate en rodajas. Enrolla.'}]},
+    {name:'Ensalada de alubias blancas con atún',kcal:350,prep_time:'10 min',ings:[{name:'Alubias blancas cocidas',qty:'150g'},{name:'Atún al natural',qty:'80g'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Perejil fresco',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Escurre las alubias y el atún. Pica la cebolla fina. Mezcla todo con el perejil, aceite, vinagre y sal.'}]},
   ],
   schwein:[
-    {name:'Pechuga de pollo a la plancha con pimientos asados',kcal:270,prep_time:'15 min',
-     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Asar pimientos',text:'Corta el pimiento en tiras y ásalo en sartén con aceite a fuego medio-alto 8 min.'},{title:'Hacer pollo',text:'Salpimienta la pechuga con ajo en polvo y cocina a la plancha 3-4 min por lado.'}]},
-    {name:'Ensalada de atún con huevo cocido y judías verdes',kcal:260,prep_time:'15 min',
-     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'150g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min. Enfría.'},{title:'Montar',text:'Combina el atún escurrido, las judías, los huevos en cuartos. Aliña con aceite, vinagre y sal.'}]},
-    {name:'Bowl de arroz con pollo al curry suave',kcal:400,prep_time:'20 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Curry en polvo',qty:'1 TL'},{name:'Yogur natural',qty:'2 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz según indicaciones.'},{title:'Pollo al curry',text:'Corta el pollo en dados, salpimienta con curry y sofríe 6 min. Mezcla con el yogur fuera del fuego. Sirve sobre el arroz.'}]},
-    {name:'Ensalada de garbanzos con espinacas y limón',kcal:290,prep_time:'10 min',
-     ings:[{name:'Garbanzos cocidos',qty:'200g'},{name:'Espinacas frescas',qty:'60g'},{name:'Zumo de limón',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Escurre los garbanzos. Mezcla con las espinacas, el zumo de limón, aceite y sal. Deja reposar 5 min.'}]},
-    {name:'Wrap de pollo con lechuga, tomate y queso fresco',kcal:350,prep_time:'10 min',
-     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Lechuga',qty:'2 hojas'},{name:'Tomate',qty:'½ ud'},{name:'Queso fresco',qty:'30g'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Rellenar',text:'Desmenuza el pollo. Coloca sobre la tortilla la lechuga, el tomate en rodajas, el pollo y el queso. Enrolla y envuelve en papel de aluminio.'}]},
-    {name:'Salmón al horno con espárragos y limón',kcal:300,prep_time:'20 min',
-     ings:[{name:'Lomo de salmón',qty:'150g'},{name:'Espárragos verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Hornear',text:'Coloca el salmón y los espárragos en bandeja. Aliña con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'}]},
-    {name:'Ensalada de pasta con pollo, tomate y albahaca',kcal:380,prep_time:'20 min',
-     ings:[{name:'Pasta',qty:'80g'},{name:'Pechuga de pollo',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer',text:'Cuece la pasta. Cocina el pollo a la plancha y córtalo en dados.'},{title:'Montar',text:'Mezcla pasta fría con el pollo, los cherry, albahaca y aceite.'}]},
-    {name:'Tortilla de patata pequeña con ensalada',kcal:420,prep_time:'20 min',
-     ings:[{name:'Patatas',qty:'200g'},{name:'Huevos',qty:'2 ud'},{name:'Cebolla',qty:'¼ ud'},{name:'Aceite de oliva',qty:'2 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Confitar patata',text:'Corta la patata y cebolla en láminas finas. Sofríe en aceite a fuego bajo 12 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade la patata, mezcla y cuaja en sartén 5 min por lado. Sirve con ensalada.'}]},
-    {name:'Bowl de arroz con salmón y edamame',kcal:390,prep_time:'20 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Lomo de salmón',qty:'130g'},{name:'Edamame congelado',qty:'80g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer',text:'Cuece el arroz y el edamame. Haz el salmón a la plancha 3 min por lado y desmenuza.'},{title:'Montar',text:'Coloca el arroz, añade el salmón y el edamame. Aliña con soja y aceite de sésamo.'}]},
-    {name:'Pollo al limón con calabacín a la plancha y arroz',kcal:380,prep_time:'20 min',
-     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Calabacín',qty:'1 ud'},{name:'Arroz',qty:'60g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Corta el calabacín en rodajas y cocina en plancha 3 min. Cocina el pollo con zumo de limón, aceite, sal y pimienta 4 min por lado.'}]},
+    {name:'Pechuga de pollo con pimientos asados',kcal:280,prep_time:'15 min',ings:[{name:'Pechuga de pollo',qty:'140g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pimentón',qty:'½ TL'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Asar pimiento',text:'Corta el pimiento en tiras y ásalo en sartén con aceite a fuego medio 8 min.'},{title:'Pollo',text:'Salpimienta el pollo con pimentón y cocina a la plancha 4 min por lado.'}]},
+    {name:'Ensalada de atún con huevo y judías',kcal:290,prep_time:'15 min',ings:[{name:'Atún al natural',qty:'100g'},{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'120g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min. Enfría.'},{title:'Montar',text:'Combina el atún, las judías y los huevos en cuartos. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Bowl de arroz con pollo al curry',kcal:400,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Pechuga de pollo',qty:'120g'},{name:'Curry en polvo',qty:'1 TL'},{name:'Yogur natural',qty:'2 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz según indicaciones.'},{title:'Pollo al curry',text:'Corta el pollo en dados. Sofríe con aceite y curry 6 min. Mezcla con el yogur fuera del fuego. Sirve sobre el arroz.'}]},
+    {name:'Salmón con espárragos al limón',kcal:320,prep_time:'20 min',ings:[{name:'Lomo de salmón',qty:'120g'},{name:'Espárragos verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Hornear',text:'Coloca el salmón y los espárragos en bandeja. Aliña con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'}]},
+    {name:'Wrap de pollo con tomate y queso fresco',kcal:360,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Tomate',qty:'½ ud'},{name:'Queso fresco',qty:'40g'},{name:'Lechuga',qty:'2 hojas'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Desmenuza el pollo. Coloca sobre la tortilla la lechuga, el tomate en rodajas, el pollo y el queso. Enrolla.'}]},
+    {name:'Ensalada de garbanzos con espinacas',kcal:310,prep_time:'10 min',ings:[{name:'Garbanzos cocidos',qty:'150g'},{name:'Espinacas frescas',qty:'60g'},{name:'Tomate cherry',qty:'80g'},{name:'Zumo de limón',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Escurre los garbanzos. Mezcla con las espinacas, los cherry, limón, aceite y sal. Deja reposar 5 min.'}]},
+    {name:'Tortilla de espinacas con ensalada',kcal:280,prep_time:'10 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Tomate',qty:'½ ud'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Hacer tortilla',text:'Saltea las espinacas 1 min. Bate los huevos con sal, añade las espinacas y cuaja en sartén 4 min.'},{title:'Servir',text:'Acompaña con la lechuga y el tomate aliñados.'}]},
+    {name:'Pasta con pollo, tomate y albahaca',kcal:400,prep_time:'20 min',ings:[{name:'Pasta',qty:'55g'},{name:'Pechuga de pollo',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer pasta',text:'Cuece la pasta en agua con sal.'},{title:'Montar',text:'Cocina el pollo en dados 5 min. Mezcla todo con los cherry, albahaca y aceite.'}]},
+    {name:'Lentejas rojas con jengibre y coco',kcal:340,prep_time:'20 min',ings:[{name:'Lentejas rojas',qty:'60g'},{name:'Leche de coco',qty:'80ml'},{name:'Jengibre fresco rallado',qty:'1 TL'},{name:'Cúrcuma',qty:'½ TL'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Sofrito',text:'Sofríe la cebolla con aceite, jengibre y cúrcuma 3 min.'},{title:'Cocer',text:'Añade las lentejas, la leche de coco y 100ml de agua. Cuece 15 min. Salpimienta.'}]},
+    {name:'Bowl de arroz con salmón teriyaki',kcal:400,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Lomo de salmón',qty:'110g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Miel',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 TL'},{name:'Sésamo',qty:'1 TL'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Teriyaki',text:'Mezcla soja y miel. Marina el salmón 5 min. Cocina en sartén con aceite 3 min por lado. Sirve sobre el arroz con sésamo.'}]},
   ],
   rind:[
-    {name:'Ensalada niçoise con atún, huevo, judías verdes y olivas',kcal:290,prep_time:'15 min',
-     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Huevos',qty:'2 ud'},{name:'Judías verdes',qty:'100g'},{name:'Olivas negras',qty:'8 ud'},{name:'Tomate cherry',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'}],
-     steps:[{title:'Cocer',text:'Cuece los huevos 10 min y las judías 5 min. Enfría.'},{title:'Montar',text:'Coloca todos los ingredientes en el tupper. Aliña con aceite y vinagre.'}]},
-    {name:'Wrap de pollo con aguacate y lechuga',kcal:360,prep_time:'10 min',
-     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Aguacate',qty:'½ ud'},{name:'Lechuga',qty:'2 hojas'},{name:'Zumo de limón',qty:'unas gotas'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pollo desmenuzado y la lechuga. Enrolla.'}]},
-    {name:'Lentejas rojas con coco y jengibre',kcal:340,prep_time:'20 min',
-     ings:[{name:'Lentejas rojas',qty:'80g'},{name:'Leche de coco',qty:'100ml'},{name:'Jengibre fresco',qty:'1 TL rallado'},{name:'Cúrcuma',qty:'½ TL'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Sofrito',text:'Sofríe la cebolla con aceite, jengibre y cúrcuma 3 min.'},{title:'Cocer',text:'Añade las lentejas y la leche de coco más 150ml de agua. Cuece 15 min hasta que estén tiernas. Salpimienta.'}]},
-    {name:'Tortilla de champiñones con ensalada',kcal:280,prep_time:'12 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Champiñones',qty:'150g'},{name:'Ajo',qty:'1 diente'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Saltear',text:'Lamina los champiñones y saltea con ajo y aceite 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade los champiñones y cuaja en sartén 4 min. Sirve con ensalada verde.'}]},
-    {name:'Pasta fría con pesto, cherry y mozzarella',kcal:420,prep_time:'15 min',
-     ings:[{name:'Pasta (fusilli)',qty:'80g'},{name:'Pesto',qty:'1 EL'},{name:'Tomate cherry',qty:'80g'},{name:'Mozzarella fresca',qty:'50g'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer pasta',text:'Cuece y enfría la pasta.'},{title:'Montar',text:'Mezcla con pesto, cherry y mozzarella en dados.'}]},
-    {name:'Frittata de puerro y queso con tostada',kcal:330,prep_time:'15 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Puerro',qty:'½ ud'},{name:'Queso rallado',qty:'30g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pan integral',qty:'1 rebanada'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Pochar puerro',text:'Corta el puerro en rodajas finas y sofríe con aceite 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal y queso, añade el puerro y cuaja a fuego bajo 6 min con tapa. Sirve con tostada.'}]},
-    {name:'Bowl de arroz con huevo poché y espinacas',kcal:360,prep_time:'15 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Huevos',qty:'2 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz. Saltea las espinacas 1 min.'},{title:'Huevo poché',text:'En agua hirviendo con vinagre, añade los huevos y cuece 3 min. Sirve sobre el arroz con espinacas, soja y sésamo.'}]},
-    {name:'Pechuga de pollo con pimientos asados y arroz',kcal:370,prep_time:'20 min',
-     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Arroz',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pimentón',qty:'½ TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Asa el pimiento en tiras 8 min. Cocina el pollo con pimentón y sal 4 min por lado. Sirve con el arroz.'}]},
-    {name:'Ensalada de atún con aguacate, tomate y maíz',kcal:300,prep_time:'10 min',
-     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'1 ud'},{name:'Maíz cocido',qty:'3 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Corta el aguacate y el tomate en dados. Mezcla con el atún escurrido, el maíz, aceite, sal y unas gotas de limón.'}]},
-    {name:'Tortilla de espinacas y queso feta',kcal:280,prep_time:'12 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Queso feta',qty:'40g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Saltear espinacas',text:'Saltea las espinacas 1 min con aceite.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las espinacas y el feta desmenuzado. Cuaja en sartén 5 min.'}]},
+    {name:'Wrap de pollo con aguacate y lechuga',kcal:360,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Aguacate',qty:'½ ud'},{name:'Lechuga',qty:'2 hojas'},{name:'Zumo de limón',qty:'unas gotas'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pollo desmenuzado y la lechuga. Enrolla.'}]},
+    {name:'Ensalada de pasta con atún y olivas',kcal:370,prep_time:'15 min',ings:[{name:'Pasta',qty:'55g'},{name:'Atún al natural',qty:'100g'},{name:'Olivas negras',qty:'20g'},{name:'Tomate cherry',qty:'80g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer y enfriar',text:'Cuece la pasta. Escurre y enfría bajo el grifo.'},{title:'Montar',text:'Mezcla con el atún, las olivas y los cherry. Aliña con aceite y sal.'}]},
+    {name:'Frittata de puerro y queso',kcal:320,prep_time:'15 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Puerro',qty:'½ ud'},{name:'Queso rallado',qty:'30g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pan integral',qty:'1 rebanada'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Pochar puerro',text:'Corta el puerro fino y sofríe con aceite 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal y queso, añade el puerro y cuaja a fuego bajo 6 min con tapa. Sirve con la tostada.'}]},
+    {name:'Salmón ahumado con rúcula y tostada',kcal:290,prep_time:'5 min',ings:[{name:'Salmón ahumado',qty:'80g'},{name:'Rúcula',qty:'1 puñado'},{name:'Pan integral',qty:'2 rebanadas'},{name:'Queso crema light',qty:'1 EL'},{name:'Pimienta negra',qty:'al gusto'}],steps:[{title:'Montar',text:'Unta las tostadas con queso crema. Coloca el salmón encima y la rúcula al lado. Añade pimienta negra.'}]},
+    {name:'Bowl de arroz con huevo poché y espinacas',kcal:360,prep_time:'15 min',ings:[{name:'Arroz',qty:'50g'},{name:'Huevos',qty:'2 ud'},{name:'Espinacas frescas',qty:'60g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'},{name:'Vinagre',qty:'1 TL'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz. Saltea las espinacas 1 min.'},{title:'Huevo poché',text:'Hierve agua con vinagre. Cuece los huevos 3 min. Sirve sobre el arroz con espinacas, soja y sésamo.'}]},
+    {name:'Ensalada de atún con aguacate y maíz',kcal:310,prep_time:'10 min',ings:[{name:'Atún al natural',qty:'100g'},{name:'Aguacate',qty:'½ ud'},{name:'Maíz cocido',qty:'3 EL'},{name:'Tomate',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],steps:[{title:'Preparar',text:'Corta el aguacate y el tomate en dados. Mezcla con el atún, el maíz, aceite, sal y limón.'}]},
+    {name:'Pasta fría con pesto y mozzarella',kcal:410,prep_time:'15 min',ings:[{name:'Pasta',qty:'55g'},{name:'Pesto',qty:'1 EL'},{name:'Mozzarella fresca',qty:'50g'},{name:'Tomate cherry',qty:'80g'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer y enfriar',text:'Cuece la pasta. Enfría bajo el grifo.'},{title:'Montar',text:'Mezcla la pasta con el pesto, la mozzarella en dados y los cherry.'}]},
+    {name:'Garbanzos con pimiento asado y cebolla',kcal:320,prep_time:'15 min',ings:[{name:'Garbanzos cocidos',qty:'180g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pimentón ahumado',qty:'½ TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Asar pimiento',text:'Corta el pimiento en tiras y ásalo con aceite 8 min.'},{title:'Mezclar',text:'Escurre los garbanzos. Mezcla con el pimiento, la cebolla picada, pimentón y sal.'}]},
+    {name:'Wrap de pavo con mostaza y tomate',kcal:330,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Tomate',qty:'½ ud'},{name:'Mostaza',qty:'1 TL'},{name:'Lechuga',qty:'2 hojas'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Unta la tortilla con mostaza. Añade el pavo, la lechuga y el tomate en rodajas. Enrolla.'}]},
+    {name:'Tortilla de champiñones con ensalada verde',kcal:290,prep_time:'12 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Champiñones',qty:'150g'},{name:'Ajo',qty:'1 diente'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Saltear',text:'Lamina los champiñones y saltea con ajo y aceite 4 min.'},{title:'Cuajar y servir',text:'Bate los huevos con sal, añade los champiñones y cuaja 4 min. Sirve con lechuga aliñada.'}]},
   ],
   fisch:[
-    {name:'Pechuga de pollo a la plancha con pimientos asados',kcal:270,prep_time:'15 min',
-     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Asar pimientos',text:'Asa el pimiento en tiras con aceite 8 min.'},{title:'Hacer pollo',text:'Salpimienta el pollo con ajo y cocina 4 min por lado.'}]},
-    {name:'Bowl de arroz con pollo al limón y espárragos',kcal:370,prep_time:'20 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Espárragos verdes',qty:'100g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer',text:'Cuece el arroz. Haz los espárragos a la plancha 4 min.'},{title:'Pollo',text:'Cocina el pollo con zumo de limón y aceite 4 min por lado. Corta y sirve sobre el arroz.'}]},
-    {name:'Ensalada de garbanzos con pollo, tomate y albahaca',kcal:320,prep_time:'15 min',
-     ings:[{name:'Garbanzos cocidos',qty:'150g'},{name:'Pechuga de pollo cocida',qty:'80g'},{name:'Tomate cherry',qty:'80g'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Desmenuza el pollo. Corta los cherry por la mitad. Mezcla con los garbanzos, albahaca, aceite y sal.'}]},
-    {name:'Wrap de pavo con aguacate y mostaza',kcal:330,prep_time:'10 min',
-     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Mostaza',qty:'1 TL'},{name:'Lechuga',qty:'2 hojas'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Rellenar',text:'Unta la tortilla con mostaza y el aguacate aplastado. Añade el pavo y la lechuga. Enrolla.'}]},
-    {name:'Lentejas con verduras y pimentón',kcal:300,prep_time:'20 min',
-     ings:[{name:'Lentejas pardinas',qty:'80g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Pimentón dulce',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Sofrito',text:'Sofríe la cebolla y zanahoria troceadas con aceite y pimentón 3 min.'},{title:'Cocer',text:'Añade las lentejas y agua suficiente. Cuece 18 min. Ajusta sal.'}]},
-    {name:'Tortilla de patata con ensalada verde',kcal:420,prep_time:'20 min',
-     ings:[{name:'Patatas',qty:'200g'},{name:'Huevos',qty:'2 ud'},{name:'Cebolla',qty:'¼ ud'},{name:'Aceite de oliva',qty:'2 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Confitar',text:'Fríe la patata y cebolla a fuego bajo 12 min.'},{title:'Cuajar',text:'Bate huevos con sal, añade la patata, cuaja 5 min por lado. Sirve con lechuga aliñada.'}]},
-    {name:'Pasta con pollo, tomate fresco y albahaca',kcal:400,prep_time:'20 min',
-     ings:[{name:'Pasta',qty:'80g'},{name:'Pechuga de pollo',qty:'100g'},{name:'Tomate maduro',qty:'1 ud'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer pasta',text:'Cuece la pasta.'},{title:'Montar',text:'Cocina el pollo en dados. Mezcla todo en caliente con el tomate en cubos, albahaca y aceite.'}]},
-    {name:'Bowl de arroz con pollo, calabacín y salsa de soja',kcal:380,prep_time:'20 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Calabacín',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Saltear',text:'Saltea el calabacín en dados y el pollo en tiras con aceite 6 min. Añade la soja y sirve sobre el arroz.'}]},
-    {name:'Ensalada de alubias rojas con maíz y pimiento',kcal:290,prep_time:'10 min',
-     ings:[{name:'Alubias rojas cocidas',qty:'200g'},{name:'Maíz cocido',qty:'3 EL'},{name:'Pimiento verde',qty:'½ ud'},{name:'Cebolleta',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Escurre las alubias. Pica el pimiento y la cebolleta. Mezcla todo con el maíz, aceite, vinagre y sal.'}]},
-    {name:'Ensalada de pollo con mango, lechuga y vinagreta',kcal:310,prep_time:'15 min',
-     ings:[{name:'Pechuga de pollo cocida',qty:'120g'},{name:'Mango',qty:'½ ud'},{name:'Lechuga variada',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre de manzana',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Corta el pollo en tiras y el mango en dados. Mezcla con la lechuga y aliña con aceite, vinagre y sal.'}]},
+    {name:'Pechuga de pollo con calabacín y arroz',kcal:370,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Calabacín',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Corta el calabacín en rodajas y cocina 3 min. Cocina el pollo con sal y pimienta 4 min por lado. Sirve con el arroz.'}]},
+    {name:'Tortilla de pimiento y cebolla',kcal:270,prep_time:'12 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Pimiento verde',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Saltear',text:'Corta el pimiento y la cebolla en juliana. Sofríe con aceite 5 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las verduras y cuaja 4 min.'}]},
+    {name:'Ensalada de garbanzos con pollo y albahaca',kcal:330,prep_time:'15 min',ings:[{name:'Garbanzos cocidos',qty:'130g'},{name:'Pechuga de pollo cocida',qty:'90g'},{name:'Tomate cherry',qty:'80g'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Desmenuza el pollo. Corta los cherry por la mitad. Mezcla con los garbanzos, albahaca, aceite y sal.'}]},
+    {name:'Wrap de pavo con aguacate y mostaza',kcal:330,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Mostaza',qty:'1 TL'},{name:'Lechuga',qty:'2 hojas'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Aplasta el aguacate con sal. Unta la tortilla con mostaza y aguacate. Añade el pavo y la lechuga. Enrolla.'}]},
+    {name:'Lentejas con verduras y pimentón',kcal:310,prep_time:'20 min',ings:[{name:'Lentejas pardinas',qty:'60g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Pimentón dulce',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Sofrito',text:'Sofríe la cebolla y zanahoria con aceite y pimentón 3 min.'},{title:'Cocer',text:'Añade las lentejas y agua suficiente. Cuece 18 min. Ajusta sal.'}]},
+    {name:'Bowl de arroz con pollo al limón',kcal:370,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Pollo',text:'Cocina el pollo con zumo de limón, aceite, ajo y sal 4 min por lado. Corta y sirve sobre el arroz.'}]},
+    {name:'Pasta con pollo y tomate fresco',kcal:400,prep_time:'20 min',ings:[{name:'Pasta',qty:'55g'},{name:'Pechuga de pollo',qty:'100g'},{name:'Tomate maduro',qty:'1 ud'},{name:'Albahaca fresca',qty:'unas hojas'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer pasta',text:'Cuece la pasta.'},{title:'Montar',text:'Cocina el pollo en dados 5 min. Mezcla todo con el tomate en cubos, albahaca y aceite.'}]},
+    {name:'Ensalada de alubias rojas con maíz',kcal:300,prep_time:'10 min',ings:[{name:'Alubias rojas cocidas',qty:'150g'},{name:'Maíz cocido',qty:'3 EL'},{name:'Pimiento verde',qty:'½ ud'},{name:'Cebolleta',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Escurre las alubias. Pica el pimiento y la cebolleta. Mezcla con el maíz, aceite, vinagre y sal.'}]},
+    {name:'Ensalada de pollo con mango y vinagreta',kcal:320,prep_time:'15 min',ings:[{name:'Pechuga de pollo cocida',qty:'110g'},{name:'Mango',qty:'½ ud'},{name:'Lechuga variada',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre de manzana',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Corta el pollo en tiras y el mango en dados. Mezcla con la lechuga. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Bowl de arroz con pollo y calabacín',kcal:380,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Pechuga de pollo',qty:'120g'},{name:'Calabacín',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Saltear',text:'Saltea el calabacín en dados y el pollo en tiras con aceite 6 min. Añade la soja. Sirve sobre el arroz.'}]},
   ],
   veggi:[
-    {name:'Pechuga de pollo con ensalada de rúcula y parmesano',kcal:280,prep_time:'15 min',
-     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Rúcula',qty:'1 puñado'},{name:'Parmesano',qty:'20g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Limón',qty:'unas gotas'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Hacer pollo',text:'Cocina el pollo a la plancha con sal y pimienta 4 min por lado.'},{title:'Montar',text:'Sirve sobre la rúcula. Añade el parmesano rallado y aliña con aceite y limón.'}]},
-    {name:'Ensalada de atún con aguacate y tomate',kcal:290,prep_time:'10 min',
-     ings:[{name:'Atún al natural',qty:'1 lata'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Corta el aguacate y el tomate en dados. Mezcla con el atún escurrido, aceite, sal y zumo de limón.'}]},
-    {name:'Bowl de arroz con salmón y edamame',kcal:390,prep_time:'20 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Lomo de salmón',qty:'130g'},{name:'Edamame congelado',qty:'80g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'}],
-     steps:[{title:'Cocer',text:'Cuece el arroz y el edamame.'},{title:'Salmón',text:'Haz el salmón a la plancha 3 min por lado. Desmenuza y sirve sobre el arroz con edamame, soja y sésamo.'}]},
-    {name:'Wrap de pollo con lechuga y queso fresco',kcal:340,prep_time:'10 min',
-     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Lechuga',qty:'2 hojas'},{name:'Queso fresco',qty:'40g'},{name:'Tomate',qty:'½ ud'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Rellenar',text:'Coloca sobre la tortilla la lechuga, el pollo desmenuzado, el queso en dados y el tomate. Enrolla.'}]},
-    {name:'Pasta fría con atún, olivas y tomate',kcal:370,prep_time:'15 min',
-     ings:[{name:'Pasta',qty:'80g'},{name:'Atún al natural',qty:'1 lata'},{name:'Olivas negras',qty:'8 ud'},{name:'Tomate cherry',qty:'80g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer y enfriar pasta',text:'Cuece la pasta según el paquete. Enfría bajo el grifo.'},{title:'Montar',text:'Mezcla con el atún, las olivas y los cherry. Aliña con aceite y sal.'}]},
-    {name:'Tortilla de jamón y queso con ensalada',kcal:310,prep_time:'10 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Jamón cocido',qty:'60g'},{name:'Queso rallado',qty:'30g'},{name:'Aceite de oliva',qty:'1 TL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cuajar',text:'Bate los huevos con sal. Añade el jamón en tiras y el queso. Cuaja en sartén 4 min a fuego medio.'},{title:'Servir',text:'Acompaña con lechuga aliñada con aceite.'}]},
-    {name:'Salmón ahumado con pepino y queso crema',kcal:270,prep_time:'5 min',
-     ings:[{name:'Salmón ahumado',qty:'80g'},{name:'Pepino',qty:'½ ud'},{name:'Queso crema light',qty:'2 EL'},{name:'Pan integral',qty:'2 rebanadas'},{name:'Eneldo',qty:'al gusto'},{name:'Pimienta',qty:'al gusto'}],
-     steps:[{title:'Montar',text:'Unta el pan con queso crema. Coloca el salmón encima. Sirve con el pepino en rodajas y espolvorea eneldo y pimienta.'}]},
-    {name:'Bowl de arroz con atún, maíz y aguacate',kcal:380,prep_time:'15 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Atún al natural',qty:'1 lata'},{name:'Maíz cocido',qty:'3 EL'},{name:'Aguacate',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz y deja templar.'},{title:'Montar',text:'Coloca el arroz en el tupper. Añade el atún, el maíz y el aguacate en dados. Aliña con soja y limón.'}]},
-    {name:'Pechuga de pavo con pimientos asados y arroz',kcal:360,prep_time:'20 min',
-     ings:[{name:'Filete de pavo',qty:'150g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Arroz',qty:'60g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimentón',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Asa el pimiento en tiras. Cocina el pavo con pimentón y sal 4 min por lado. Sirve con el arroz.'}]},
-    {name:'Ensalada de pasta con pollo, tomate y piñones',kcal:400,prep_time:'20 min',
-     ings:[{name:'Pasta',qty:'80g'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Piñones',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer y enfriar pasta',text:'Cuece la pasta y enfría.'},{title:'Montar',text:'Mezcla con el pollo en dados, los cherry, los piñones tostados y aceite.'}]},
+    {name:'Pollo a la plancha con rúcula y parmesano',kcal:290,prep_time:'15 min',ings:[{name:'Pechuga de pollo',qty:'130g'},{name:'Rúcula',qty:'1 puñado'},{name:'Parmesano',qty:'15g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Limón',qty:'unas gotas'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Hacer pollo',text:'Salpimienta el pollo y cocina a la plancha 4 min por lado.'},{title:'Montar',text:'Sirve sobre la rúcula. Añade el parmesano rallado y aliña con aceite y limón.'}]},
+    {name:'Ensalada de atún con aguacate',kcal:300,prep_time:'10 min',ings:[{name:'Atún al natural',qty:'100g'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],steps:[{title:'Preparar',text:'Corta el aguacate y el tomate en dados. Mezcla con el atún escurrido, aceite, sal y limón.'}]},
+    {name:'Bowl de arroz con salmón y edamame',kcal:400,prep_time:'20 min',ings:[{name:'Arroz',qty:'45g'},{name:'Lomo de salmón',qty:'100g'},{name:'Edamame congelado',qty:'60g'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de sésamo',qty:'1 TL'}],steps:[{title:'Cocer',text:'Cuece el arroz y el edamame.'},{title:'Salmón',text:'Haz el salmón a la plancha 3 min por lado. Desmenuza. Sirve sobre el arroz con edamame, soja y sésamo.'}]},
+    {name:'Salmón ahumado con pepino y queso crema',kcal:280,prep_time:'5 min',ings:[{name:'Salmón ahumado',qty:'80g'},{name:'Pepino',qty:'½ ud'},{name:'Queso crema light',qty:'2 EL'},{name:'Pan integral',qty:'2 rebanadas'},{name:'Eneldo',qty:'al gusto'}],steps:[{title:'Montar',text:'Unta el pan con queso crema. Coloca el salmón encima. Sirve con el pepino en rodajas y espolvorea eneldo.'}]},
+    {name:'Pasta fría con atún y olivas',kcal:370,prep_time:'15 min',ings:[{name:'Pasta',qty:'55g'},{name:'Atún al natural',qty:'100g'},{name:'Olivas negras',qty:'20g'},{name:'Tomate cherry',qty:'80g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer y enfriar',text:'Cuece la pasta según el paquete. Enfría bajo el grifo.'},{title:'Montar',text:'Mezcla con el atún, las olivas y los cherry. Aliña con aceite y sal.'}]},
+    {name:'Wrap de pollo con queso fresco y tomate',kcal:350,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Queso fresco',qty:'40g'},{name:'Tomate',qty:'½ ud'},{name:'Lechuga',qty:'2 hojas'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Coloca sobre la tortilla la lechuga, el pollo desmenuzado, el queso en dados y el tomate. Enrolla.'}]},
+    {name:'Tortilla de jamón y queso con ensalada',kcal:310,prep_time:'10 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Jamón cocido',qty:'60g'},{name:'Queso rallado',qty:'20g'},{name:'Aceite de oliva',qty:'1 TL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cuajar',text:'Bate los huevos con sal. Añade el jamón en tiras y el queso. Cuaja en sartén 4 min a fuego medio.'},{title:'Servir',text:'Acompaña con lechuga aliñada.'}]},
+    {name:'Bowl de arroz con atún, maíz y aguacate',kcal:380,prep_time:'15 min',ings:[{name:'Arroz',qty:'50g'},{name:'Atún al natural',qty:'100g'},{name:'Maíz cocido',qty:'3 EL'},{name:'Aguacate',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Sal y limón',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz y deja templar.'},{title:'Montar',text:'Coloca el arroz en el tupper. Añade el atún, el maíz y el aguacate en dados. Aliña con soja y limón.'}]},
+    {name:'Pavo con pimientos asados y arroz',kcal:360,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Filete de pavo',qty:'140g'},{name:'Pimiento rojo',qty:'1 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Pimentón',qty:'½ TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Plancha',text:'Asa el pimiento en tiras 8 min. Cocina el pavo con pimentón y sal 4 min por lado. Sirve con el arroz.'}]},
+    {name:'Ensalada de pasta con pollo y piñones',kcal:400,prep_time:'20 min',ings:[{name:'Pasta',qty:'55g'},{name:'Pechuga de pollo cocida',qty:'100g'},{name:'Tomate cherry',qty:'80g'},{name:'Piñones',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer y enfriar',text:'Cuece la pasta y enfría.'},{title:'Montar',text:'Mezcla con el pollo en dados, los cherry, los piñones tostados y aceite.'}]},
   ],
   wurst:[
-    {name:'Pechuga de pollo con judías verdes y salsa de yogur',kcal:270,prep_time:'15 min',
-     ings:[{name:'Pechuga de pollo',qty:'150g'},{name:'Judías verdes',qty:'150g'},{name:'Yogur natural',qty:'3 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer judías',text:'Cuece las judías en agua con sal 5 min. Escurre.'},{title:'Pollo y salsa',text:'Cocina el pollo a la plancha 4 min por lado. Mezcla el yogur con ajo y sal. Sirve con las judías y la salsa.'}]},
-    {name:'Ensalada de garbanzos con espinacas y huevo duro',kcal:300,prep_time:'15 min',
-     ings:[{name:'Garbanzos cocidos',qty:'200g'},{name:'Espinacas frescas',qty:'60g'},{name:'Huevos',qty:'2 ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer huevos',text:'Cuece los huevos 10 min. Enfría y pela.'},{title:'Montar',text:'Mezcla los garbanzos con las espinacas. Añade los huevos en cuartos. Aliña con aceite, vinagre y sal.'}]},
-    {name:'Salmón al horno con judías verdes y limón',kcal:300,prep_time:'20 min',
-     ings:[{name:'Lomo de salmón',qty:'150g'},{name:'Judías verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Hornear',text:'Coloca el salmón en bandeja con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'},{title:'Judías',text:'Cuece las judías 5 min en agua con sal. Sirve junto al salmón.'}]},
-    {name:'Bowl de arroz con pollo, calabacín y salsa de soja',kcal:380,prep_time:'20 min',
-     ings:[{name:'Arroz',qty:'70g'},{name:'Pechuga de pollo',qty:'130g'},{name:'Calabacín',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Saltear',text:'Saltea el calabacín y el pollo en tiras con aceite 6 min. Añade la soja. Sirve sobre el arroz.'}]},
-    {name:'Frittata de verduras con ensalada de rúcula',kcal:290,prep_time:'15 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Calabacín',qty:'½ ud'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Rúcula',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Saltear verduras',text:'Saltea el calabacín y pimiento en dados 3 min con aceite y sal.'},{title:'Cuajar y servir',text:'Bate los huevos con sal, añade las verduras y cuaja a fuego bajo 6 min. Sirve con rúcula.'}]},
-    {name:'Wrap de pavo con aguacate y tomate',kcal:320,prep_time:'10 min',
-     ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'½ ud'},{name:'Sal y limón',qty:'al gusto'}],
-     steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pavo y el tomate en rodajas. Enrolla.'}]},
-    {name:'Lentejas con verduras y comino',kcal:310,prep_time:'20 min',
-     ings:[{name:'Lentejas pardinas',qty:'80g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Comino',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Sofrito',text:'Sofríe la cebolla y zanahoria con aceite y comino 3 min.'},{title:'Cocer',text:'Añade las lentejas y agua. Cuece 18 min. Ajusta sal.'}]},
-    {name:'Pasta con salmón ahumado y eneldo',kcal:380,prep_time:'15 min',
-     ings:[{name:'Pasta',qty:'80g'},{name:'Salmón ahumado',qty:'80g'},{name:'Queso crema light',qty:'2 EL'},{name:'Eneldo',qty:'al gusto'},{name:'Sal y pimienta',qty:'al gusto'}],
-     steps:[{title:'Cocer pasta',text:'Cuece la pasta y reserva 2 EL del agua de cocción.'},{title:'Montar',text:'Mezcla la pasta caliente con el queso crema, el agua reservada y el salmón en trozos. Añade eneldo y pimienta.'}]},
-    {name:'Ensalada de alubias blancas con atún y cebolla',kcal:290,prep_time:'10 min',
-     ings:[{name:'Alubias blancas cocidas',qty:'200g'},{name:'Atún al natural',qty:'1 lata'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Perejil fresco',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Preparar',text:'Escurre las alubias y el atún. Pica la cebolla fina. Mezcla todo con el perejil, aceite, vinagre y sal.'}]},
-    {name:'Tortilla de champiñones y pimiento con ensalada',kcal:280,prep_time:'15 min',
-     ings:[{name:'Huevos',qty:'3 ud'},{name:'Champiñones',qty:'100g'},{name:'Pimiento verde',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Lechuga',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],
-     steps:[{title:'Saltear',text:'Saltea los champiñones laminados y el pimiento en dados con aceite y sal 4 min.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las verduras y cuaja 5 min. Sirve con lechuga.'}]},
+    {name:'Pollo con judías verdes y salsa de yogur',kcal:280,prep_time:'15 min',ings:[{name:'Pechuga de pollo',qty:'130g'},{name:'Judías verdes',qty:'150g'},{name:'Yogur natural',qty:'3 EL'},{name:'Ajo en polvo',qty:'½ TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer judías',text:'Cuece las judías en agua con sal 5 min. Escurre.'},{title:'Pollo y salsa',text:'Cocina el pollo a la plancha 4 min por lado. Mezcla el yogur con ajo y sal. Sirve con las judías y la salsa.'}]},
+    {name:'Ensalada de garbanzos con huevo duro',kcal:310,prep_time:'15 min',ings:[{name:'Garbanzos cocidos',qty:'150g'},{name:'Huevos',qty:'2 ud'},{name:'Espinacas frescas',qty:'50g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer huevos',text:'Cuece los huevos 10 min. Enfría y pela.'},{title:'Montar',text:'Mezcla los garbanzos con las espinacas. Añade los huevos en cuartos. Aliña con aceite, vinagre y sal.'}]},
+    {name:'Salmón al horno con judías verdes',kcal:330,prep_time:'20 min',ings:[{name:'Lomo de salmón',qty:'120g'},{name:'Judías verdes',qty:'150g'},{name:'Limón',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Hornear',text:'Coloca el salmón en bandeja con aceite, limón, sal y pimienta. Hornea 180°C 15 min.'},{title:'Judías',text:'Cuece las judías 5 min en agua con sal. Sirve junto al salmón.'}]},
+    {name:'Bowl de arroz con pollo y calabacín',kcal:370,prep_time:'20 min',ings:[{name:'Arroz',qty:'50g'},{name:'Pechuga de pollo',qty:'120g'},{name:'Calabacín',qty:'½ ud'},{name:'Salsa de soja',qty:'1 EL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Cocer arroz',text:'Cuece el arroz.'},{title:'Saltear',text:'Saltea el calabacín y el pollo en tiras con aceite 6 min. Añade la soja. Sirve sobre el arroz.'}]},
+    {name:'Frittata de verduras con rúcula',kcal:290,prep_time:'15 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Calabacín',qty:'½ ud'},{name:'Pimiento rojo',qty:'½ ud'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Rúcula',qty:'1 puñado'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Saltear verduras',text:'Saltea el calabacín y pimiento en dados 3 min con aceite y sal.'},{title:'Cuajar y servir',text:'Bate los huevos con sal, añade las verduras y cuaja a fuego bajo 6 min. Sirve con rúcula.'}]},
+    {name:'Wrap de pavo con aguacate y tomate',kcal:330,prep_time:'10 min',ings:[{name:'Tortilla de trigo',qty:'1 ud'},{name:'Fiambre de pavo',qty:'80g'},{name:'Aguacate',qty:'½ ud'},{name:'Tomate',qty:'½ ud'},{name:'Sal y limón',qty:'al gusto'}],steps:[{title:'Rellenar',text:'Aplasta el aguacate con limón y sal. Unta la tortilla, añade el pavo y el tomate en rodajas. Enrolla.'}]},
+    {name:'Lentejas con comino y zanahoria',kcal:320,prep_time:'20 min',ings:[{name:'Lentejas pardinas',qty:'60g'},{name:'Zanahoria',qty:'1 ud'},{name:'Cebolla',qty:'½ ud'},{name:'Comino',qty:'1 TL'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Sofrito',text:'Sofríe la cebolla y zanahoria con aceite y comino 3 min.'},{title:'Cocer',text:'Añade las lentejas y agua suficiente. Cuece 18 min. Ajusta sal.'}]},
+    {name:'Pasta con salmón y eneldo',kcal:380,prep_time:'15 min',ings:[{name:'Pasta',qty:'55g'},{name:'Salmón ahumado',qty:'80g'},{name:'Queso crema light',qty:'1 EL'},{name:'Eneldo',qty:'al gusto'},{name:'Sal y pimienta',qty:'al gusto'}],steps:[{title:'Cocer pasta',text:'Cuece la pasta y reserva 2 EL del agua de cocción.'},{title:'Montar',text:'Mezcla la pasta caliente con el queso crema, el agua reservada y el salmón en trozos. Añade eneldo y pimienta.'}]},
+    {name:'Ensalada de alubias con atún y cebolla',kcal:300,prep_time:'10 min',ings:[{name:'Alubias blancas cocidas',qty:'150g'},{name:'Atún al natural',qty:'80g'},{name:'Cebolla morada',qty:'¼ ud'},{name:'Perejil fresco',qty:'1 puñado'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Vinagre',qty:'1 TL'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Preparar',text:'Escurre las alubias y el atún. Pica la cebolla fina. Mezcla todo con el perejil, aceite, vinagre y sal.'}]},
+    {name:'Tortilla de champiñones y espinacas',kcal:280,prep_time:'12 min',ings:[{name:'Huevos',qty:'2 ud'},{name:'Champiñones',qty:'120g'},{name:'Espinacas frescas',qty:'50g'},{name:'Aceite de oliva',qty:'1 EL'},{name:'Ajo',qty:'1 diente'},{name:'Sal',qty:'al gusto'}],steps:[{title:'Saltear',text:'Lamina los champiñones y saltea con ajo y aceite 3 min. Añade las espinacas y saltea 1 min más.'},{title:'Cuajar',text:'Bate los huevos con sal, añade las verduras y cuaja 4 min.'}]},
   ],
 };
-
 // Ingredientes a evitar por persona
 // Ingredientes a evitar siempre por persona
 const TUPPER_AVOID={
@@ -2020,13 +1899,20 @@ const TUPPER_AVOID={
 
 // Palabras clave de proteína que hay que excluir según la cena
 const PROT_KEYWORDS={
-  huhn:['pollo','pechuga','pavo','pollo'],
-  schwein:['cerdo','bacon','panceta'],
-  rind:['ternera','buey','carne roja'],
-  fisch:['salmón','atún','pescado','merluza','bacalao','sardina'],
-  wurst:['jamón','embutido','chorizo','salchichón','fiambre'],
-  veggi:[], // vegetariano → sin restricción de proteína
+  huhn:['pollo','pechuga','pavo'],
+  schwein:['cerdo','bacon','panceta','costilla'],
+  rind:['ternera','buey','vacuno'],
+  fisch:['salmón','atún','pescado','merluza','bacalao','sardina','seelachs','dorada'],
+  wurst:['jamón','embutido','chorizo','salchichón','fiambre','longaniza'],
+  veggi:[],
 };
+
+// Tuppers donde Thomas puede añadir brócoli como extra
+const TUPPER_CON_BROCOLI_THOMAS=['Salmón al horno con judías verdes','Bowl de arroz con salmón y edamame',
+  'Bowl de salmón con edamame','Pechuga de pollo con pimientos asados',
+  'Bowl de arroz con pollo al curry','Salmón con espárragos al limón',
+  'Bowl de arroz con pollo al limón','Bowl de arroz con pollo y calabacín',
+  'Bowl de arroz con salmón teriyaki'];
 
 // Pool completo de todos los tuppers (sin duplicados por nombre)
 function getAllTuppers(){
@@ -2057,37 +1943,40 @@ function getPoolTuppers(wo,day,excluirKey=null){
   const tipo=rec?rec.type:'veggi';
   const cenaKcal=rec?getKcal(rec.name)||null:null;
   const tdee=calcTDEE(userProfile);
-  // Ideal: llegar al objetivo de déficit. TDEE como techo.
-  const kcalIdeal=cenaKcal?Math.max(50,OBJETIVO-FIJO-cenaKcal):350;
-  const kcalMin=Math.max(50,kcalIdeal-80);
-  const kcalMax=Math.min(tdee-FIJO-(cenaKcal||0),kcalIdeal+80);
+  const totalSinTupper=FIJO+(cenaKcal||0);
+  const margen=tdee-totalSinTupper; // kcal disponibles para el tupper sin pasar TDEE
 
-  // Pool: todos los tuppers menos los que contienen la proteína de la cena
+  // Pool: todos los tuppers menos proteína de la cena y evitados de Nata
   const protExcluir=PROT_KEYWORDS[tipo]||[];
   let opciones=getAllTuppers().filter(t=>{
     const n=t.name.toLowerCase();
-    // Excluir proteína de la cena
     if(protExcluir.some(p=>n.includes(p)))return false;
-    // Excluir ingredientes no deseados de Nata
     if(TUPPER_AVOID.nata.some(ev=>n.includes(ev)))return false;
     return true;
   });
-
-  // Filtrar por kcal
-  const porKcal=opciones.filter(t=>t.kcal>=kcalMin&&t.kcal<=kcalMax);
-  if(porKcal.length)opciones=porKcal;
 
   // Excluir usados en los 10 días anteriores
   const usados10=getTuppersUsadosUltimoDias(wo,day,10);
   const sinHistorico=opciones.filter(t=>!usados10.has(t.name.toLowerCase().trim()));
   if(sinHistorico.length)opciones=sinHistorico;
 
-  // Excluir usados esta semana (además del día actual)
+  // Excluir usados esta semana
   const semanaKeys=[0,1,2,3,4,5,6].map(d=>lunchKey(wo,d))
     .filter(k=>k!==lunchKey(wo,day)&&k!==excluirKey);
   const usadosSemana=new Set(semanaKeys.map(k=>lunches[k]?.nata||'').filter(Boolean).map(s=>s.toLowerCase().trim()));
   const sinSemana=opciones.filter(t=>!usadosSemana.has(t.name.toLowerCase().trim()));
   if(sinSemana.length)opciones=sinSemana;
+
+  // Ordenar: primero los que no pasan el TDEE, por cercanía al margen
+  // Si todos lo pasan, ordenar por kcal ascendente
+  const sinPasar=opciones.filter(t=>t.kcal<=margen);
+  if(sinPasar.length){
+    // Entre los que no pasan, los 3 más cercanos al margen (máximo déficit sin pasarse)
+    opciones=sinPasar.sort((a,b)=>Math.abs(margen-a.kcal)-Math.abs(margen-b.kcal)).slice(0,3);
+  } else {
+    // Todos pasan el TDEE — los 3 más ligeros
+    opciones=[...opciones].sort((a,b)=>a.kcal-b.kcal).slice(0,3);
+  }
 
   return opciones;
 }
@@ -2101,7 +1990,8 @@ function sugerirTupper(){
   const thomasOk=!TUPPER_AVOID.thomas.some(ev=>elegido.name.toLowerCase().includes(ev));
 
   document.getElementById('lmodalNata').value=elegido.name;
-  document.getElementById('lmodalThomas').value=thomasOk?'Igual que Nata':'';
+  const thomasVal=thomasOk?'Igual que Nata'+(TUPPER_CON_BROCOLI_THOMAS.includes(elegido.name)?' + brócoli al vapor':''):'';
+  document.getElementById('lmodalThomas').value=thomasVal;
   document.getElementById('lmodalPrepTime').value=elegido.prep_time||'';
   renderLingRows('shared', elegido.ings||[]);
   renderStepRows(elegido.steps||[]);
@@ -2130,10 +2020,11 @@ function sugerirSemanaCompleta(){
 
     const elegido=opciones[Math.floor(Math.random()*opciones.length)];
     const thomasOk=!TUPPER_AVOID.thomas.some(ev=>elegido.name.toLowerCase().includes(ev));
+    const thomasVal=thomasOk?'Igual que Nata'+(TUPPER_CON_BROCOLI_THOMAS.includes(elegido.name)?' + brócoli al vapor':''):'';
 
     lunches[lunchKey(wo,day)]={
       nata:elegido.name,
-      thomas:thomasOk?'Igual que Nata':'',
+      thomas:thomasVal,
       prep_time:elegido.prep_time||'',
       ings:elegido.ings||[],
       steps:elegido.steps||[],
@@ -4553,7 +4444,20 @@ const KCAL_DB={
   'Bio-Rinderhüftsteak mit feiner Bärlauch-Crème':769,
   'Cajun-Chicken mit Salat in Buttermilch-Dressing':705,
   'Chicken Bites mit Süßkartoffel-Bohnen-Salat':821,
-  'Marry-Me-Chicken in sahniger Soße':602,
+  'Marry-Me-Chicken in sahniger Soße':612,
+  // KW19
+  'Hüftsteak vom Weiderind in Champignon-Soße':681,
+  'Käsespätzlepfanne mit Schweinelachssteak':1401,
+  'Seelachs aus der Pfanne in frischem Zitronenöl':577,
+  'Tijuana-Caesar Salad mit Bacon, dazu eine Limo':796,
+  'New York Chicken Fingers mit Tomatendip':949,
+  'Spaghetti mit Pilzrahm-Soße':888,
+  // KW20 (próxima semana — añadir cuando se procesen los PDFs)
+  'Rheinischer Eintopf mit Hackfleisch vom Weiderind':850,
+  'Tropische Salat-Bowl mit Süßkartoffel':720,
+  'Weißer Spargel mit Hollandaise und Krustenschinken':780,
+  'Hähnchenbrust im Knuspermantel':820,
+  'Honig-Senf-Hähnchensalat mit Avocado':650,
 };
 function getKcal(name){
   // Primero recipeData (importado desde HTML), luego KCAL_DB hardcoded
@@ -4700,20 +4604,23 @@ function renderAnalisis(){
 
   const known=dayData.filter(x=>x.total!==null);
   const media=known.length?Math.round(known.reduce((s,x)=>s+x.total,0)/known.length):null;
-  const exceso=media!==null?media-OBJETIVO:null; // positivo=por encima del obj, negativo=por debajo (bien)
+  const exceso=media!==null?media-OBJETIVO:null;
+  const excesoTDEE=media!==null?media-tdee:null; // respecto al TDEE (el techo real)
   const gPerSemana=exceso!==null?Math.round(Math.abs(exceso)*7/7700*1000):null;
   const perdiendo=exceso!==null&&exceso<0;
   const maxKcal=Math.max(tdee+300,...dayData.filter(x=>x.total).map(x=>x.total));
 
   let html='';
 
-  // ── MENSAJE MOTIVACIONAL (solo si la semana va bien) ──
+  // ── MENSAJE MOTIVACIONAL ──
   const msgHtml=getMotivationalMessage({exceso,gPerSemana,perdiendo,dayData,known,anWo,kw,tdee});
   if(msgHtml)html+=msgHtml;
 
   // ── BLOQUE 1: ¿Voy bien esta semana? ──
-  const semaforo=exceso===null?null:exceso<=-50?'🟢 Vas bien':exceso<=150?'🟡 Cerca del objetivo':'🔴 Por encima del objetivo';
-  const semaforoColor=exceso===null?'var(--muted)':exceso<=-50?'#2e6b30':exceso<=150?'#e0a830':'#e05050';
+  // Semáforo basado en TDEE (el techo real), no en el objetivo de déficit
+  const bajotdee=excesoTDEE!==null&&excesoTDEE<0;
+  const semaforo=excesoTDEE===null?null:excesoTDEE<=-100?'🟢 Por debajo del techo':excesoTDEE<=0?'🟡 Rozando el techo':'🔴 Por encima del techo';
+  const semaforoColor=excesoTDEE===null?'var(--muted)':excesoTDEE<=-100?'#2e6b30':excesoTDEE<=0?'#e0a830':'#e05050';
 
   html+=`<div class="an-card full" style="margin-bottom:14px;">
     <div class="an-hdr"><span class="an-title">🎯 ¿Voy bien esta semana?</span><span class="an-sub">Sem. ${kw} · ${known.length}/7 días con datos</span></div>
@@ -4722,11 +4629,22 @@ function renderAnalisis(){
   if(media===null){
     html+=`<div class="an-empty">Añade recetas y tuppers para ver el análisis calórico.</div>`;
   } else {
-    const excesoLabel=exceso<0?`${Math.abs(Math.round(exceso))} kcal/día de sobra`:`${Math.round(exceso)} kcal/día de exceso`;
+    // Titular: margen respecto al TDEE (positivo = bien, negativo = pasado)
+    const margenTDEE=Math.round(tdee-media);
+    const titularLabel=margenTDEE>=0
+      ?`${margenTDEE} kcal/día de margen`
+      :`${Math.abs(margenTDEE)} kcal/día sobre el techo`;
+    const titularColor=margenTDEE>=100?'#2e6b30':margenTDEE>=0?'#e0a830':'#e05050';
+    // Secundario: déficit respecto al objetivo
+    const deficitObj=Math.round(OBJETIVO-media);
+    const deficitLabel=deficitObj>=0
+      ?`Déficit de ${deficitObj} kcal/día respecto al objetivo (${OBJETIVO} kcal)`
+      :`${Math.abs(deficitObj)} kcal/día por encima del objetivo (${OBJETIVO} kcal)`;
+
     html+=`<div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
       <div>
-        <div style="font-size:28px;font-weight:700;font-family:'Lora',serif;color:${semaforoColor};">${excesoLabel}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Media ${Math.round(media)} kcal · Objetivo ${OBJETIVO} kcal · TDEE ${tdee} kcal</div>
+        <div style="font-size:28px;font-weight:700;font-family:'Lora',serif;color:${titularColor};">${titularLabel}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${deficitLabel} · Media ${Math.round(media)} kcal · TDEE ${tdee} kcal</div>
       </div>
       <div style="background:${semaforoColor}18;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:${semaforoColor};">${semaforo}</div>
       ${gPerSemana!==null?`<div style="font-size:13px;color:${perdiendo?'#2e6b30':'#e05050'};font-weight:600;">→ ~${gPerSemana}g ${perdiendo?'perdidos esta semana ✓':'ganados esta semana'}</div>`:''}
@@ -4740,7 +4658,7 @@ function renderAnalisis(){
       const tdeePct=(tdee/maxKcal)*100;
       const dayExceso=total?total-OBJETIVO:null;
       const over=dayExceso!==null&&dayExceso>0;
-      const color=!total?'#e0ddd8':cheatKcal?'#e05050':total<OBJETIVO?'#6db870':total<=tdee?'#e0a830':'#e05050';
+      const color=!total?'#e0ddd8':cheatKcal?'#e05050':total<=tdee?'#6db870':total<=tdee*1.1?'#e0a830':'#e05050';
       const cenaStr=rec?(cenaKcal?`${rec.name.split(' ').slice(0,2).join(' ')} (${cenaKcal})`:'cena sin kcal'):'sin cena';
       const tupStr=l?(tupperKcal?`tupper ~${tupperKcal}`:'tupper —'):'sin tupper';
       html+=`<div class="day-bar-row" style="${over?'background:#fff8f8;border-radius:6px;padding:2px 4px;margin:0 -4px;':''}">
@@ -4756,7 +4674,7 @@ function renderAnalisis(){
         <span class="day-bar-val" style="color:${color};font-weight:${over?'700':'400'}">${total?total+' kcal':'—'}</span>
       </div>`;
     });
-    html+=`<div class="an-note" style="margin-top:8px;">🟢 Por debajo del objetivo · 🟡 Entre objetivo y TDEE · 🔴 Por encima del TDEE · <span style="color:#e0a830;font-weight:600;">┅</span> Objetivo ${OBJETIVO} kcal · <span style="color:#c0392b;font-weight:600;">│</span> TDEE ${tdee} kcal</div>`;
+    html+=`<div class="an-note" style="margin-top:8px;">🟢 Por debajo del TDEE · 🟡 Hasta +10% del TDEE (${Math.round(tdee*1.1)} kcal) · 🔴 Más de +10% · <span style="border-bottom:2px dashed #e0a830;padding-bottom:1px;">┅</span> Objetivo ${OBJETIVO} kcal · <span style="color:#c0392b;">│</span> TDEE ${tdee} kcal</div>`;
   }
   html+=`</div></div>`;
 
